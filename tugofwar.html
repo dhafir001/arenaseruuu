@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXTREME TUG OF WAR</title>
+    <style>
+        /* Modern CSS Variables */
+        :root {
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --accent: #1e90ff;
+            --dark: #2f3542;
+            --darker: #1e272e;
+            --light: #f1f2f6;
+            --team1-color: #ff6348;
+            --team2-color: #70a1ff;
+            --rope-color: #cd853f;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Bungee', cursive, sans-serif;
+        }
+
+        @font-face {
+            font-family: 'Bungee';
+            src: url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            text-align: center;
+            perspective: 1000px;
+        }
+
+        /* Particle Background */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Main Menu */
+        #mainMenu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .title {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+            letter-spacing: 3px;
+            animation: titleGlow 2s infinite alternate;
+            transform-style: preserve-3d;
+        }
+
+        .menu-btn {
+            padding: 15px 40px;
+            margin: 15px;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 25px rgba(255, 71, 87, 0.5);
+            width: 250px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .menu-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.7);
+        }
+
+        .menu-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Game Container */
+        #gameContent {
+            display: none;
+            padding: 20px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #gameContainer {
+            width: 90%;
+            max-width: 900px;
+            height: 250px;
+            margin: 0 auto;
+            border: 5px solid var(--primary);
+            background: linear-gradient(to bottom, #333333, #1a1a1a);
+            position: relative;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 71, 87, 0.5);
+            overflow: hidden;
+            transform-style: preserve-3d;
+        }
+
+        #battlefield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1519752441410-d3ca70ecb937?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        #rope {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            margin-top: -7.5px;
+            background: linear-gradient(to right, #8b4513, var(--rope-color), #8b4513);
+            box-shadow: 0 0 15px rgba(139, 69, 19, 0.8);
+            z-index: 1;
+            transform-origin: center;
+        }
+
+        #marker {
+            position: absolute;
+            top: 50%;
+            width: 40px;
+            height: 80px;
+            margin-top: -40px;
+            background: linear-gradient(to bottom, var(--primary), #990000);
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 8px;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+            z-index: 2;
+            transition: left 0.1s ease-out;
+        }
+
+        /* Teams */
+        .team {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 120px;
+            height: 120px;
+            z-index: 3;
+            transition: all 0.3s ease;
+        }
+
+        #team1 {
+            left: 30px;
+            background: url('https://cdn-icons-png.flaticon.com/512/5558/5558512.png') center/contain no-repeat;
+            filter: drop-shadow(0 0 10px var(--team1-color));
+        }
+
+        #team2 {
+            right: 30px;
+            background: url('https://cdn-icons-png.flaticon.com/512/5558/5558530.png') center/contain no-repeat;
+            filter: drop-shadow(0 0 10px var(--team2-color));
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .control-btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, var(--accent), #5352ed);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(30, 144, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(30, 144, 255, 0.6);
+        }
+
+        /* Scoreboard */
+        #scoreboard {
+            font-size: 1.8rem;
+            margin: 25px;
+            color: var(--light);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #status {
+            font-size: 1.5rem;
+            margin: 20px;
+            color: var(--secondary);
+            text-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+            min-height: 40px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Animations */
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 10px var(--primary); }
+            to { text-shadow: 0 0 30px var(--primary), 0 0 50px var(--accent); }
+        }
+
+        @keyframes pullLeft {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes pullRight {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes ropeShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            75% { transform: rotate(-2deg); }
+        }
+
+        .pull-left {
+            animation: pullLeft 0.2s ease-out;
+        }
+
+        .pull-right {
+            animation: pullRight 0.2s ease-out;
+        }
+
+        .rope-shake {
+            animation: ropeShake 0.1s infinite;
+        }
+
+        /* Power-ups */
+        .power-up {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--secondary);
+            border-radius: 50%;
+            z-index: 4;
+            display: none;
+            box-shadow: 0 0 15px var(--secondary);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .title { font-size: 3rem; }
+            .menu-btn { width: 200px; padding: 12px; font-size: 1.1rem; }
+            #gameContainer { height: 180px; }
+            .team { width: 80px; height: 80px; }
+            #team1 { left: 15px; }
+            #team2 { right: 15px; }
+            #scoreboard { font-size: 1.4rem; }
+            #status { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+    
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <h1 class="title">EXTREME TUG OF WAR</h1>
+        <button class="menu-btn" id="startBtn">START BATTLE</button>
+        <button class="menu-btn" id="howToPlayBtn">HOW TO PLAY</button>
+        <button class="menu-btn" id="exitBtn">EXIT ARENA</button>
+    </div>
+    
+    <!-- Game Content -->
+    <div id="gameContent">
+        <div class="game-header">
+            <h2 class="title" style="font-size: 2.5rem;">TUG OF WAR</h2>
+            <div>
+                <button class="control-btn" id="menuBtn">MENU</button>
+                <button class="control-btn" id="musicBtn">MUSIC: OFF</button>
+            </div>
+        </div>
+        
+        <div id="scoreboard">TEAM RED: 0 | TEAM BLUE: 0</div>
+        <div id="status">PRESS A (LEFT) OR L (RIGHT) TO PULL!</div>
+        
+        <div id="gameContainer">
+            <div id="battlefield"></div>
+            <div id="team1" class="team"></div>
+            <div id="team2" class="team"></div>
+            <div id="rope"></div>
+            <div id="marker"></div>
+            <div class="power-up" id="powerUp"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="helpBtn">HELP</button>
+            <button class="control-btn" id="powerUpBtn">POWER SHOT (P)</button>
+        </div>
+    </div>
+    
+    <!-- Audio Elements -->
+    <audio id="bgMusic" loop><source src="https://assets.mixkit.co/music/preview/mixkit-epic-adventure-836.mp3" type="audio/mpeg"></audio>
+    <audio id="pullSound"><source src="https://assets.mixkit.co/sfx/preview/mixkit-boxing-punch-2051.mp3" type="audio/mpeg"></audio>
+    <audio id="winSound"><source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg"></audio>
+    <audio id="powerUpSound"><source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg"></audio>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Initialize Particle.js
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#ff4757" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#ff4757", opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "repulse" },
+                    onclick: { enable: true, mode: "push" }
+                }
+            }
+        });
+
+        // Game Elements
+        const mainMenu = document.getElementById('mainMenu');
+        const gameContent = document.getElementById('gameContent');
+        const startBtn = document.getElementById('startBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const exitBtn = document.getElementById('exitBtn');
+        const howToPlayBtn = document.getElementById('howToPlayBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        
+        const marker = document.getElementById('marker');
+        const rope = document.getElementById('rope');
+        const team1 = document.getElementById('team1');
+        const team2 = document.getElementById('team2');
+        const powerUp = document.getElementById('powerUp');
+        const powerUpBtn = document.getElementById('powerUpBtn');
+        
+        const bgMusic = document.getElementById('bgMusic');
+        const pullSound = document.getElementById('pullSound');
+        const winSound = document.getElementById('winSound');
+        const powerUpSound = document.getElementById('powerUpSound');
+        const musicBtn = document.getElementById('musicBtn');
+        const scoreboard = document.getElementById('scoreboard');
+        const status = document.getElementById('status');
+        
+        // Game Variables
+        let musicOn = false;
+        let markerPos = 50;
+        let score = {team1: 0, team2: 0};
+        const baseStep = 1;
+        const powerStep = 3;
+        let currentStep = baseStep;
+        const winThreshold = 10;
+        const winThresholdRight = 90;
+        let gameWidth = document.getElementById('gameContainer').offsetWidth;
+        let gameActive = false;
+        let maxScore = 5;
+        let powerUpActive = false;
+        let powerUpAvailable = true;
+        
+        // Initialize Game
+        function initGame() {
+            // Reset game state
+            markerPos = 50;
+            score = {team1: 0, team2: 0};
+            gameActive = true;
+            powerUpAvailable = true;
+            currentStep = baseStep;
+            updateScore();
+            updateMarkerPosition();
+            hidePowerUp();
+            
+            // Show game content
+            mainMenu.style.display = 'none';
+            gameContent.style.display = 'block';
+            
+            // Start music if enabled
+            if(musicOn) {
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+            }
+            
+            // Update game width
+            gameWidth = document.getElementById('gameContainer').offsetWidth;
+            
+            // Reset status
+            status.textContent = "PRESS A (LEFT) OR L (RIGHT) TO PULL!";
+            status.style.color = "#2ed573";
+            
+            // Random power up appearance
+            setTimeout(() => {
+                if(gameActive) showPowerUp();
+            }, 10000);
+        }
+        
+        // Update marker position
+        function updateMarkerPosition() {
+            const pos = (gameWidth * markerPos / 100) - (marker.offsetWidth / 2);
+            marker.style.left = pos + 'px';
+            
+            // Visual effects based on position
+            if (markerPos < 45) {
+                team1.classList.add('pull-left');
+                team2.classList.remove('pull-right');
+                rope.classList.add('rope-shake');
+            } else if (markerPos > 55) {
+                team2.classList.add('pull-right');
+                team1.classList.remove('pull-left');
+                rope.classList.add('rope-shake');
+            } else {
+                team1.classList.remove('pull-left');
+                team2.classList.remove('pull-right');
+                rope.classList.remove('rope-shake');
+            }
+            
+            // Color intensity based on position
+            const intensity = Math.abs(50 - markerPos) / 50;
+            document.documentElement.style.setProperty('--rope-color', `rgba(205, 133, 63, ${0.5 + intensity * 0.5})`);
+        }
+        
+        // Show power up
+        function showPowerUp() {
+            if(!gameActive || powerUpActive || !powerUpAvailable) return;
+            
+            powerUp.style.display = 'block';
+            powerUp.style.left = `${Math.random() * 80 + 10}%`;
+            powerUp.style.top = `${Math.random() * 50 + 25}%`;
+            powerUpActive = true;
+            
+            setTimeout(() => {
+                if(powerUpActive) hidePowerUp();
+            }, 5000);
+        }
+        
+        function hidePowerUp() {
+            powerUp.style.display = 'none';
+            powerUpActive = false;
+        }
+        
+        function collectPowerUp() {
+            if(!powerUpActive) return;
+            
+            powerUpSound.currentTime = 0;
+            powerUpSound.play();
+            hidePowerUp();
+            powerUpAvailable = false;
+            currentStep = powerStep;
+            status.textContent = "POWER SHOT ACTIVATED! NEXT PULL IS STRONGER!";
+            status.style.color = "#ffa502";
+            
+            setTimeout(() => {
+                currentStep = baseStep;
+                powerUpAvailable = true;
+                if(gameActive) {
+                    status.textContent = "PRESS A (LEFT) OR L (RIGHT) TO PULL!";
+                    status.style.color = "#2ed573";
+                }
+            }, 3000);
+        }
+        
+        // Event Listeners
+        startBtn.addEventListener('click', initGame);
+        
+        menuBtn.addEventListener('click', () => {
+            gameContent.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            bgMusic.pause();
+            gameActive = false;
+        });
+        
+        exitBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        
+        howToPlayBtn.addEventListener('click', () => {
+            alert("HOW TO PLAY:\n\nTEAM RED (LEFT): Press A key to pull\nTEAM BLUE (RIGHT): Press L key to pull\n\nFirst to pull the marker to their side wins the round!\nFirst to win 5 rounds wins the match!\n\nCollect power-ups for stronger pulls!\nPress R to reset after each round.");
+        });
+        
+        helpBtn.addEventListener('click', () => {
+            howToPlayBtn.click();
+        });
+        
+        musicBtn.addEventListener('click', () => {
+            musicOn = !musicOn;
+            musicBtn.textContent = musicOn ? "MUSIC: ON" : "MUSIC: OFF";
+            if(musicOn) {
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+            } else {
+                bgMusic.pause();
+            }
+        });
+        
+        powerUpBtn.addEventListener('click', () => {
+            if(powerUpAvailable && !powerUpActive) {
+                showPowerUp();
+            }
+        });
+        
+        powerUp.addEventListener('click', collectPowerUp);
+        
+        // Game Controls
+        document.addEventListener('keydown', e => {
+            if(!gameActive) return;
+            
+            if((e.key === 'a' || e.key === 'A') && markerPos > winThreshold) { // Team 1
+                markerPos -= currentStep;
+                if(markerPos < 0) markerPos = 0;
+                pullSound.currentTime = 0;
+                pullSound.play();
+                updateMarkerPosition();
+                checkWin();
+            }
+            
+            if((e.key === 'l' || e.key === 'L') && markerPos < winThresholdRight) { // Team 2
+                markerPos += currentStep;
+                if(markerPos > 100) markerPos = 100;
+                pullSound.currentTime = 0;
+                pullSound.play();
+                updateMarkerPosition();
+                checkWin();
+            }
+            
+            if(e.key === 'p' || e.key === 'P') { // Power-up shortcut
+                powerUpBtn.click();
+            }
+            
+            if(e.key === 'r' || e.key === 'R') { // Reset round
+                if(markerPos <= winThreshold || markerPos >= winThresholdRight) {
+                    markerPos = 50;
+                    updateMarkerPosition();
+                    status.textContent = "PRESS A (LEFT) OR L (RIGHT) TO PULL!";
+                    status.style.color = "#2ed573";
+                    gameActive = true;
+                    
+                    // Show new power-up after delay
+                    setTimeout(() => {
+                        if(gameActive) showPowerUp();
+                    }, 3000);
+                }
+            }
+        });
+        
+        // Check for win condition
+        function checkWin() {
+            if(markerPos <= winThreshold) {
+                score.team1++;
+                updateScore();
+                status.textContent = "TEAM RED WINS THE ROUND! PRESS R TO CONTINUE";
+                status.style.color = "#ff6348";
+                winSound.currentTime = 0;
+                winSound.play();
+                gameActive = false;
+                
+                if(score.team1 >= maxScore) {
+                    status.textContent = "TEAM RED WINS THE MATCH! PRESS R TO PLAY AGAIN";
+                    winSound.currentTime = 0;
+                    winSound.play();
+                    score = {team1: 0, team2: 0};
+                }
+            } else if(markerPos >= winThresholdRight) {
+                score.team2++;
+                updateScore();
+                status.textContent = "TEAM BLUE WINS THE ROUND! PRESS R TO CONTINUE";
+                status.style.color = "#70a1ff";
+                winSound.currentTime = 0;
+                winSound.play();
+                gameActive = false;
+                
+                if(score.team2 >= maxScore) {
+                    status.textContent = "TEAM BLUE WINS THE MATCH! PRESS R TO PLAY AGAIN";
+                    winSound.currentTime = 0;
+                    winSound.play();
+                    score = {team1: 0, team2: 0};
+                }
+            }
+        }
+        
+        // Update score display
+        function updateScore() {
+            scoreboard.textContent = `TEAM RED: ${score.team1} | TEAM BLUE: ${score.team2}`;
+            scoreboard.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                scoreboard.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            gameWidth = document.getElementById('gameContainer').offsetWidth;
+            updateMarkerPosition();
+        });
+        
+        // Initial setup
+        bgMusic.volume = 0.4;
+        pullSound.volume = 0.6;
+        winSound.volume = 0.7;
+        powerUpSound.volume = 0.8;
+    </script>
+</body>
+</html>

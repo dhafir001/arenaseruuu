@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO-GUESS | Cyber Arena</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f7ff;
+            --neon-pink: #ff00f7;
+            --neon-purple: #9d00ff;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --panel-bg: rgba(15, 12, 41, 0.7);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 20% 30%, var(--neon-purple) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, var(--neon-blue) 0%, transparent 25%),
+                linear-gradient(to bottom, var(--darker-bg), var(--dark-bg));
+            overflow-x: hidden;
+        }
+        
+        /* Cyberpunk Scanlines Effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(
+                    rgba(0, 247, 255, 0.03) 1px, 
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(0, 247, 255, 0.03) 1px, 
+                    transparent 1px
+                );
+            background-size: 3px 3px;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+            position: relative;
+            margin-top: 20px;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        header img {
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-pink);
+            animation: pulse 3s infinite alternate;
+            transition: all 0.5s;
+        }
+        
+        header img:hover {
+            transform: rotate(15deg) scale(1.1);
+            filter: hue-rotate(90deg);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 12px 25px;
+            border: 2px solid var(--neon-blue);
+            border-radius: 30px;
+            transition: all 0.4s;
+            box-shadow: 0 0 15px var(--neon-blue);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        nav a::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 247, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        nav a:hover {
+            background-color: var(--neon-blue);
+            color: black;
+            box-shadow: 0 0 25px var(--neon-blue), 0 0 50px var(--neon-blue);
+            transform: translateY(-3px);
+        }
+        
+        nav a:hover::before {
+            left: 100%;
+        }
+        
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        #gameContainer {
+            background: var(--panel-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue), inset 0 0 15px var(--neon-blue);
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.5s;
+        }
+        
+        #gameContainer::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent,
+                transparent,
+                transparent,
+                var(--neon-pink),
+                transparent
+            );
+            transform: rotate(30deg);
+            animation: shine 6s infinite;
+            opacity: 0.3;
+        }
+        
+        #gameContainer:hover {
+            transform: translateY(-5px) rotateX(5deg);
+            box-shadow: 0 10px 40px var(--neon-blue), inset 0 0 20px var(--neon-blue);
+        }
+        
+        #timer {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-pink);
+            text-shadow: 0 0 10px var(--neon-pink);
+            letter-spacing: 1px;
+        }
+        
+        .game-instruction {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        
+        .input-container {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        input {
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            text-align: center;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            transition: all 0.3s;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        input:focus {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 20px var(--neon-pink);
+            transform: scale(1.02);
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            border: none;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            color: black;
+            cursor: pointer;
+            transition: all 0.4s;
+            margin: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            min-width: 120px;
+        }
+        
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px var(--neon-blue), 0 10px 40px var(--neon-purple);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        #message {
+            margin-top: 25px;
+            font-size: 1.2rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid transparent;
+            transition: all 0.5s;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .success {
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+            border-color: #00ff88 !important;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+        
+        .error {
+            color: #ff5555;
+            text-shadow: 0 0 10px #ff5555;
+            border-color: #ff5555 !important;
+            box-shadow: 0 0 20px rgba(255, 85, 85, 0.3);
+        }
+        
+        .info {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            border-color: var(--neon-blue) !important;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+        }
+        
+        footer {
+            padding: 20px;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-top: 40px;
+            position: relative;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-pink);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 25px var(--neon-blue), 0 0 50px var(--neon-pink);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-pink);
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes shine {
+            0% {
+                transform: rotate(30deg) translate(-30%, -30%);
+            }
+            100% {
+                transform: rotate(30deg) translate(30%, 30%);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                font-size: 1.5rem;
+                gap: 10px;
+            }
+            
+            nav {
+                gap: 15px;
+            }
+            
+            nav a {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            #gameContainer {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles-js"></div>
+    
+    <header>
+        <div class="logo-container">
+            <img src="logo.png" alt="NEO-GUESS Logo">
+            <span>NEO-GUESS</span>
+        </div>
+    </header>
+    
+    <nav>
+        <a href="index.html">⌂ BERANDA</a>
+        <a href="about.html">ⓘ TENTANG</a>
+        <a href="leaderboard.html">🏆 LEADERBOARD</a>
+        <a href="settings.html">⚙ PENGATURAN</a>
+    </nav>
+    
+    <main>
+        <div id="gameContainer">
+            <div id="timer">TIME: <span id="timeValue">60</span>s</div>
+            <p class="game-instruction">TEBAK ANGKA RAHASIA ANTARA 1-50 UNTUK MENDAPATKAN AKSES KE SISTEM</p>
+            
+            <div class="input-container">
+                <input type="number" id="guess" placeholder="MASUKKAN KODE" min="1" max="50">
+            </div>
+            
+            <div class="button-group">
+                <button onclick="checkGuess()">VERIFY</button>
+                <button onclick="resetGame()">RESET</button>
+            </div>
+            
+            <div id="message">SISTEM MENUNGGU INPUT...</div>
+        </div>
+    </main>
+    
+    <footer>
+        &copy; 2125 NEO-GUESS SYSTEMS | ALL RIGHTS RESERVED
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Initialize particles.js
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": ["#00f7ff", "#ff00f7", "#9d00ff"]
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": true,
+                    "anim": {
+                        "enable": true,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": true,
+                        "speed": 2,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#00f7ff",
+                    "opacity": 0.2,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 1,
+                    "direction": "none",
+                    "random": true,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": true,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "grab"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 140,
+                        "line_linked": {
+                            "opacity": 0.5
+                        }
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+        
+        // Game Logic
+        let randomNumber = Math.floor(Math.random() * 50) + 1;
+        let timeLeft = 60;
+        let timerInterval;
+        let gameActive = true;
+        
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timeValue").textContent = timeLeft;
+                
+                // Change color when time is running out
+                if (timeLeft <= 10) {
+                    document.getElementById("timer").style.color = "#ff5555";
+                    document.getElementById("timer").style.textShadow = "0 0 10px #ff5555";
+                }
+                
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+        
+        function checkGuess() {
+            if (!gameActive) return;
+            
+            let guessInput = document.getElementById("guess");
+            let guess = parseInt(guessInput.value);
+            let message = document.getElementById("message");
+            
+            if (isNaN(guess) || guess < 1 || guess > 50) {
+                message.textContent = "ERROR: INPUT TIDAK VALID! MASUKKAN ANGKA 1-50";
+                message.className = "error";
+                shakeInput();
+                return;
+            }
+            
+            if (guess === randomNumber) {
+                endGame(true);
+            } else if (guess < randomNumber) {
+                message.textContent = `ACCESS DENIED: KODE ${guess} TERLALU RENDAH`;
+                message.className = "info";
+            } else {
+                message.textContent = `ACCESS DENIED: KODE ${guess} TERLALU TINGGI`;
+                message.className = "info";
+            }
+            
+            // Clear input and focus
+            guessInput.value = "";
+            guessInput.focus();
+        }
+        
+        function endGame(isWin) {
+            clearInterval(timerInterval);
+            gameActive = false;
+            document.getElementById("guess").disabled = true;
+            
+            let message = document.getElementById("message");
+            
+            if (isWin) {
+                message.textContent = `ACCESS GRANTED! KODE ${randomNumber} DITERIMA. SISTEM TERBUKA!`;
+                message.className = "success";
+                confettiEffect();
+            } else {
+                message.textContent = `WAKTU HABIS! KODE YANG BENAR ADALAH ${randomNumber}`;
+                message.className = "error";
+            }
+        }
+        
+        function resetGame() {
+            clearInterval(timerInterval);
+            randomNumber = Math.floor(Math.random() * 50) + 1;
+            timeLeft = 60;
+            gameActive = true;
+            
+            document.getElementById("timeValue").textContent = timeLeft;
+            document.getElementById("timer").style.color = "#ff00f7";
+            document.getElementById("timer").style.textShadow = "0 0 10px #ff00f7";
+            document.getElementById("message").textContent = "SISTEM DIREBOOT... SILAKAN COBA LAGI";
+            document.getElementById("message").className = "";
+            document.getElementById("guess").disabled = false;
+            document.getElementById("guess").value = "";
+            document.getElementById("guess").focus();
+            
+            startTimer();
+        }
+        
+        function shakeInput() {
+            let input = document.getElementById("guess");
+            input.style.animation = "shake 0.5s";
+            setTimeout(() => {
+                input.style.animation = "";
+            }, 500);
+        }
+        
+        function confettiEffect() {
+            const colors = ['#00f7ff', '#ff00f7', '#9d00ff', '#00ff88', '#ff5555'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement("div");
+                confetti.style.position = "fixed";
+                confetti.style.width = "8px";
+                confetti.style.height = "8px";
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = "50%";
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.top = "-10px";
+                confetti.style.zIndex = "1000";
+                confetti.style.boxShadow = `0 0 5px ${colors[Math.floor(Math.random() * colors.length)]}`;
+                document.body.appendChild(confetti);
+                
+                const animation = confetti.animate([
+                    { top: "-10px", opacity: 1, transform: "rotate(0deg)" },
+                    { top: `${Math.random() * 100 + 50}vh`, opacity: 0, transform: "rotate(360deg)" }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: "cubic-bezier(0.1, 0.8, 0.9, 1)"
+                });
+                
+                animation.onfinish = () => {
+                    confetti.remove();
+                };
+            }
+        }
+        
+        // Add shake animation dynamically
+        const style = document.createElement("style");
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize game
+        window.onload = function() {
+            startTimer();
+            document.getElementById("guess").focus();
+        };
+        
+        // Keyboard support
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                checkGuess();
+            } else if (e.key === "Escape") {
+                resetGame();
+            }
+        });
+    </script>
+</body>
+</html>

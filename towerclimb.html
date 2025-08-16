@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Climb Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Black', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+        }
+        
+        /* Menu Utama */
+        #main-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            transition: all 0.5s ease;
+        }
+        
+        #main-menu.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .game-title {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(to right, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6);
+            }
+        }
+        
+        .menu-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #e52e71, #ff8a00);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 200px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(1px);
+        }
+        
+        /* Game Container */
+        #gameContainer {
+            width: 400px;
+            height: 600px;
+            margin: 20px auto;
+            border: 4px solid #333;
+            background: linear-gradient(to bottom, #87ceeb, #1e90ff);
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        .player {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            left: 175px;
+            bottom: 0;
+            background: url('https://via.placeholder.com/50/ff8a00/ffffff?text=P') no-repeat center/cover;
+            transition: transform 0.1s ease;
+            z-index: 10;
+        }
+        
+        .player.jumping {
+            transform: scale(1.1, 0.9);
+        }
+        
+        .platform {
+            width: 80px;
+            height: 15px;
+            position: absolute;
+            border-radius: 10px;
+            background: linear-gradient(to top, #228B22, #32CD32);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+        }
+        
+        .obstacle {
+            width: 80px;
+            height: 15px;
+            position: absolute;
+            background: linear-gradient(to top, #8B0000, #FF0000);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+        }
+        
+        .finish {
+            width: 200px;
+            height: 30px;
+            position: absolute;
+            background: linear-gradient(45deg, gold, #ffd700);
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            color: #000;
+            border-radius: 15px;
+            box-shadow: 0 0 20px gold;
+            z-index: 5;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(45deg, #e52e71, #ff8a00);
+            color: #fff;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        #scoreboard {
+            font-size: 24px;
+            margin: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        
+        #controls {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 400px;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        /* Game Over Screen */
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            display: none;
+        }
+        
+        #game-over h2 {
+            font-size: 3rem;
+            color: #ff4757;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+        }
+        
+        #final-score {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Utama -->
+    <div id="main-menu">
+        <h1 class="game-title">TOWER CLIMB</h1>
+        <button class="menu-btn" id="start-btn">Mulai Game</button>
+        <button class="menu-btn" id="how-to-play-btn">Cara Bermain</button>
+        <button class="menu-btn" id="exit-btn">Keluar</button>
+    </div>
+
+    <!-- Game Container -->
+    <h1 style="color:#fff;text-shadow:2px 2px 4px #000; margin-top: 20px;">Tower Climb Adventure</h1>
+    
+    <div id="scoreboard">Score: 0</div>
+    
+    <div id="controls">
+        <button class="control-btn" id="musicBtn">Musik: OFF</button>
+        <button class="control-btn" id="pause-btn">Jeda</button>
+        <button class="control-btn" id="menu-btn">Menu Utama</button>
+    </div>
+    
+    <div id="gameContainer">
+        <div class="player" id="player"></div>
+        <div id="game-over">
+            <h2>GAME OVER</h2>
+            <div id="final-score">Skor Anda: 0</div>
+            <button class="menu-btn" id="restart-btn">Main Lagi</button>
+            <button class="menu-btn" id="back-to-menu-btn">Menu Utama</button>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+    <audio id="jumpSound"><source src="https://www.soundjay.com/buttons/sounds/button-09.mp3" type="audio/mpeg"></audio>
+    <audio id="winSound"><source src="https://www.soundjay.com/buttons/sounds/button-21.mp3" type="audio/mpeg"></audio>
+    <audio id="loseSound"><source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg"></audio>
+
+    <script>
+        // Elemen DOM
+        const mainMenu = document.getElementById('main-menu');
+        const gameContainer = document.getElementById('gameContainer');
+        const player = document.getElementById('player');
+        const scoreboard = document.getElementById('scoreboard');
+        const bgMusic = document.getElementById('bgMusic');
+        const jumpSound = document.getElementById('jumpSound');
+        const winSound = document.getElementById('winSound');
+        const loseSound = document.getElementById('loseSound');
+        const musicBtn = document.getElementById('musicBtn');
+        const startBtn = document.getElementById('start-btn');
+        const howToPlayBtn = document.getElementById('how-to-play-btn');
+        const exitBtn = document.getElementById('exit-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+
+        // Variabel game
+        let keys = {};
+        let gravity = 0.5;
+        let vy = 0;
+        let score = 0;
+        let platforms = [];
+        let obstacles = [];
+        let platDir = [];
+        let levels = 8;
+        let gameRunning = false;
+        let isPaused = false;
+        let musicOn = false;
+        let px = 175;
+        let py = 0;
+        let animationId;
+        let clouds = [];
+        let canJump = true; // Variabel baru untuk mengontrol lompatan
+        let lastPlatformTouched = null; // Variabel untuk melacak platform terakhir yang disentuh
+
+        // Inisialisasi game
+        function initGame() {
+            // Reset variabel
+            score = 0;
+            px = 175;
+            py = 0;
+            vy = 0;
+            canJump = true;
+            lastPlatformTouched = null;
+            updateScore();
+            
+            // Hapus platform dan obstacle lama jika ada
+            platforms.forEach(p => p.remove());
+            obstacles.forEach(o => o.remove());
+            platforms = [];
+            obstacles = [];
+            platDir = [];
+            
+            // Hapus finish line lama jika ada
+            const oldFinish = document.querySelector('.finish');
+            if (oldFinish) oldFinish.remove();
+            
+            // Buat platform dan obstacle per level
+            for(let i = 0; i < levels; i++) {
+                createPlatform(i);
+            }
+            
+            // Tempat menang di level terakhir
+            const finish = document.createElement('div');
+            finish.className = 'finish';
+            finish.style.left = '100px';
+            finish.style.bottom = levels * 70 + 50 + 'px';
+            finish.textContent = "FINISH!";
+            gameContainer.appendChild(finish);
+            
+            // Posisi awal player
+            player.style.left = px + 'px';
+            player.style.bottom = py + 'px';
+            
+            // Buat awan
+            createClouds();
+            
+            // Mulai game loop
+            gameRunning = true;
+            gameOverScreen.style.display = 'none';
+            animationId = requestAnimationFrame(update);
+        }
+        
+        function createPlatform(level) {
+            let plat = document.createElement('div');
+            plat.className = 'platform';
+            plat.style.left = Math.random() * 320 + 'px';
+            plat.style.bottom = level * 70 + 'px';
+            gameContainer.appendChild(plat);
+            platforms.push(plat);
+            platDir.push(Math.random() < 0.5 ? 1 : -1);
+
+            let obs = document.createElement('div');
+            obs.className = 'obstacle';
+            obs.style.left = plat.style.left;
+            obs.style.bottom = level * 70 + 15 + 'px';
+            gameContainer.appendChild(obs);
+            obstacles.push(obs);
+        }
+        
+        function createClouds() {
+            // Hapus awan lama jika ada
+            document.querySelectorAll('.cloud').forEach(c => c.remove());
+            clouds = [];
+            
+            // Buat 5 awan
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                
+                const size = Math.random() * 50 + 50;
+                const left = Math.random() * 350;
+                const top = Math.random() * 500;
+                const opacity = Math.random() * 0.5 + 0.3;
+                
+                cloud.style.width = `${size}px`;
+                cloud.style.height = `${size * 0.6}px`;
+                cloud.style.left = `${left}px`;
+                cloud.style.top = `${top}px`;
+                cloud.style.opacity = opacity;
+                
+                // Animasi awan bergerak
+                cloud.speed = Math.random() * 0.5 + 0.2;
+                cloud.direction = Math.random() < 0.5 ? 1 : -1;
+                
+                gameContainer.appendChild(cloud);
+                clouds.push(cloud);
+            }
+        }
+        
+        function updateClouds() {
+            clouds.forEach(cloud => {
+                let left = parseFloat(cloud.style.left);
+                left += cloud.speed * cloud.direction;
+                
+                if (left > 400) {
+                    left = -50;
+                } else if (left < -50) {
+                    left = 400;
+                }
+                
+                cloud.style.left = `${left}px`;
+            });
+        }
+
+        // Fungsi untuk mengecek apakah player berada di atas platform
+        function isOnPlatform() {
+            if (py <= 0) { // Player di dasar
+                return true;
+            }
+            
+            for (let i = 0; i < platforms.length; i++) {
+                const plat = platforms[i];
+                const obs = obstacles[i];
+                
+                const platX = parseInt(plat.style.left);
+                const platY = parseInt(plat.style.bottom);
+                const obsBottom = parseInt(obs.style.bottom);
+                const topY = obsBottom + 15;
+                
+                // Cek collision dengan platform
+                if (px + 50 > platX && 
+                    px < platX + 80 && 
+                    py <= topY + 1 && 
+                    py >= topY - 10 && 
+                    vy <= 0) {
+                    
+                    // Cek apakah platform ini berbeda dengan yang terakhir disentuh
+                    if (lastPlatformTouched !== i) {
+                        lastPlatformTouched = i;
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            loseSound.play();
+            finalScoreDisplay.textContent = `Skor Anda: ${score}`;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        function update() {
+            if (isPaused) return;
+            
+            // Gerak horizontal yang lebih smooth dengan percepatan/perlambatan
+            if (keys['ArrowLeft'] && px > 0) {
+                px -= 5;
+                player.style.transform = 'scaleX(-1)';
+            }
+            if (keys['ArrowRight'] && px < 350) {
+                px += 5;
+                player.style.transform = 'scaleX(1)';
+            }
+
+            // Cek apakah player berada di atas platform atau dasar
+            const onPlatform = isOnPlatform();
+            
+            // Lompat hanya jika menyentuh platform baru atau dasar
+            if (onPlatform && canJump) {
+                vy = 10; // lompat stabil
+                jumpSound.currentTime = 0;
+                jumpSound.play();
+                score += 10;
+                updateScore();
+                player.classList.add('jumping');
+                setTimeout(() => player.classList.remove('jumping'), 200);
+                
+                // Set canJump ke false untuk mencegah lompatan berulang
+                canJump = false;
+                setTimeout(() => {
+                    canJump = true;
+                }, 300); // Cooldown lompatan 300ms
+            }
+
+            // Gravity
+            vy -= gravity;
+            py += vy;
+
+            // Geser platform ke bawah saat player naik
+            if (py > 300) {
+                let diff = py - 300;
+                py = 300;
+                platforms.forEach((p, idx) => {
+                    let b = parseInt(p.style.bottom);
+                    b -= diff;
+                    if (b < 0) {
+                        b = 600;
+                        p.style.left = Math.random() * 320 + 'px';
+                        platDir[idx] = Math.random() < 0.5 ? 1 : -1;
+                        obstacles[idx].style.left = p.style.left;
+                        obstacles[idx].style.bottom = 615 + 'px';
+                        lastPlatformTouched = null; // Reset platform terakhir saat platform baru muncul
+                    } else {
+                        obstacles[idx].style.bottom = b + 15 + 'px';
+                    }
+                    p.style.bottom = b + 'px';
+                });
+                
+                // Geser finish line
+                const finish = document.querySelector('.finish');
+                if (finish) {
+                    finish.style.bottom = parseInt(finish.style.bottom) - diff + 'px';
+                }
+            }
+
+            // Update platform horizontal
+            platforms.forEach((p, idx) => {
+                let platX = parseInt(p.style.left);
+                platX += platDir[idx] * 1.5;
+                if (platX < 0 || platX > 320) platDir[idx] *= -1;
+                p.style.left = platX + 'px';
+                obstacles[idx].style.left = platX + 'px';
+            });
+
+            if (py < 0) {
+                py = 0;
+                vy = 0;
+            }
+
+            // Cek menang - hanya jika player benar-benar mencapai bagian atas finish line
+            const finish = document.querySelector('.finish');
+            if (finish && 
+                px + 50 > parseInt(finish.style.left) && 
+                px < parseInt(finish.style.left) + 200 &&
+                py + 50 > parseInt(finish.style.bottom) + 10 && // Hanya menang jika benar-benar mencapai atas finish line
+                py + 50 < parseInt(finish.style.bottom) + 30) {
+                
+                winSound.play();
+                alert(`Selamat! Kamu Menang dengan skor ${score}!`);
+                showMainMenu();
+            }
+
+            player.style.left = px + 'px';
+            player.style.bottom = py + 'px';
+            
+            // Update awan
+            updateClouds();
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        function updateScore() {
+            scoreboard.textContent = `Score: ${score}`;
+        }
+
+        function toggleMusic() {
+            musicOn = !musicOn;
+            if (musicOn) {
+                bgMusic.play();
+                musicBtn.textContent = "Musik: ON";
+            } else {
+                bgMusic.pause();
+                musicBtn.textContent = "Musik: OFF";
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            if (isPaused) {
+                pauseBtn.textContent = "Lanjutkan";
+                cancelAnimationFrame(animationId);
+                bgMusic.pause();
+            } else {
+                pauseBtn.textContent = "Jeda";
+                animationId = requestAnimationFrame(update);
+                if (musicOn) bgMusic.play();
+            }
+        }
+
+        function showMainMenu() {
+            mainMenu.classList.remove('hidden');
+            gameContainer.style.display = 'none';
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+        }
+
+        function startGame() {
+            mainMenu.classList.add('hidden');
+            gameContainer.style.display = 'block';
+            initGame();
+        }
+
+        // Event Listeners
+        document.addEventListener('keydown', e => keys[e.code] = true);
+        document.addEventListener('keyup', e => keys[e.code] = false);
+
+        musicBtn.addEventListener('click', toggleMusic);
+        startBtn.addEventListener('click', startGame);
+        howToPlayBtn.addEventListener('click', () => alert("Gunakan tombol panah kiri dan kanan untuk bergerak. Player akan melompat otomatis ketika menyentuh platform. Hindari obstacle merah dan capai garis finish untuk menang!"));
+        exitBtn.addEventListener('click', () => window.location.href = 'index.html');
+        pauseBtn.addEventListener('click', togglePause);
+        menuBtn.addEventListener('click', showMainMenu);
+        restartBtn.addEventListener('click', () => {
+            gameOverScreen.style.display = 'none';
+            initGame();
+        });
+        backToMenuBtn.addEventListener('click', showMainMenu);
+
+        // Preload audio
+        window.addEventListener('click', () => {
+            // Autoplay policy requires user interaction first
+            bgMusic.volume = 0.3;
+            jumpSound.volume = 0.5;
+            winSound.volume = 0.7;
+            loseSound.volume = 0.7;
+        }, { once: true });
+    </script>
+</body>
+</html>

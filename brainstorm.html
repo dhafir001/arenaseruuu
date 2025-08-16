@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainStorm | Futuristic Quiz Experience</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap">
+  <style>
+    :root {
+      --primary: #00f7ff;
+      --secondary: #ff00e4;
+      --dark: #0a0a1a;
+      --light: #f0f0f0;
+      --accent: #7700ff;
+      --correct: #00ff88;
+      --wrong: #ff3a3a;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 247, 255, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255, 0, 228, 0.05) 0%, transparent 20%);
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      animation: glow 2s infinite alternate;
+    }
+    
+    .subtitle {
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+    
+    .quiz-container {
+      background: rgba(20, 20, 40, 0.8);
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .quiz-container::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+      z-index: -1;
+      border-radius: 16px;
+      animation: borderRotate 8s linear infinite;
+    }
+    
+    .quiz-container::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+      z-index: -2;
+      filter: blur(20px);
+      border-radius: 16px;
+      opacity: 0.5;
+      animation: borderRotate 8s linear infinite reverse;
+    }
+    
+    .question {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      line-height: 1.4;
+      min-height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      border-left: 3px solid var(--primary);
+    }
+    
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .choice-btn {
+      background: rgba(30, 30, 60, 0.8);
+      color: var(--light);
+      border: none;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .choice-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: 0.5s;
+    }
+    
+    .choice-btn:hover {
+      background: rgba(50, 50, 90, 0.8);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .choice-btn:hover::before {
+      left: 100%;
+    }
+    
+    .choice-btn.correct {
+      background: var(--correct);
+      color: var(--dark);
+      animation: pulse 0.5s;
+    }
+    
+    .choice-btn.wrong {
+      background: var(--wrong);
+      animation: shake 0.5s;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .btn {
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      color: var(--dark);
+      border: none;
+      border-radius: 50px;
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 247, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'Orbitron', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 247, 255, 0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(1px);
+    }
+    
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transform: translateX(-100%);
+      transition: 0.5s;
+    }
+    
+    .btn:hover::after {
+      transform: translateX(100%);
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--light);
+      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+    }
+    
+    .score-container {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.3rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+    
+    .score-container.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+    
+    .question-counter {
+      text-align: right;
+      margin-bottom: 0.5rem;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: float linear infinite;
+    }
+    
+    @keyframes float {
+      to {
+        transform: translateY(-100vh);
+      }
+    }
+    
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+      }
+      to {
+        text-shadow: 0 0 20px rgba(0, 247, 255, 0.6), 0 0 30px rgba(255, 0, 228, 0.4);
+      }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    @keyframes borderRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      .choices {
+        grid-template-columns: 1fr;
+      }
+      
+      .quiz-container {
+        padding: 1.5rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+    
+    /* Confetti effect */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: var(--primary);
+      opacity: 0;
+      animation: confettiFall 5s ease-in-out;
+      z-index: 1000;
+    }
+    
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>BRAINSTORM</h1>
+      <p class="subtitle">Uji pengetahuan Anda dengan pengalaman kuis futuristik</p>
+    </div>
+    
+    <div class="quiz-container">
+      <div class="question-counter" id="question-counter"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      
+      <div class="question" id="question">Siap untuk menguji pengetahuan Anda?</div>
+      <div class="choices" id="choices"></div>
+      
+      <div class="controls">
+        <button class="btn" id="start-btn">Mulai Quiz</button>
+        <button class="btn btn-secondary" id="back-btn" onclick="window.location.href='index.html'">Kembali</button>
+      </div>
+      
+      <div class="score-container" id="score-container">
+        <div id="score"></div>
+        <div id="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Ibukota Indonesia adalah?",
+        choices: ["Jakarta", "Bandung", "Surabaya", "Medan"],
+        answer: "Jakarta"
+      },
+      {
+        question: "Planet terdekat dari matahari?",
+        choices: ["Bumi", "Merkurius", "Mars", "Venus"],
+        answer: "Merkurius"
+      },
+      {
+        question: "Siapa penemu lampu pijar?",
+        choices: ["Thomas Edison", "Albert Einstein", "Isaac Newton", "Nikola Tesla"],
+        answer: "Thomas Edison"
+      },
+      {
+        question: "Bahasa pemrograman yang digunakan untuk web?",
+        choices: ["Python", "JavaScript", "C++", "Java"],
+        answer: "JavaScript"
+      },
+      {
+        question: "Benua terbesar di dunia?",
+        choices: ["Afrika", "Asia", "Eropa", "Amerika"],
+        answer: "Asia"
+      },
+      {
+        question: "Hewan tercepat di darat?",
+        choices: ["Cheetah", "Kuda", "Singapura", "Macan"],
+        answer: "Cheetah"
+      },
+      {
+        question: "Sungai terpanjang di dunia?",
+        choices: ["Nil", "Amazon", "Mississippi", "Yangtze"],
+        answer: "Nil"
+      },
+      {
+        question: "Siapa penulis Harry Potter?",
+        choices: ["J.K. Rowling", "Suzanne Collins", "George Martin", "Roald Dahl"],
+        answer: "J.K. Rowling"
+      },
+      {
+        question: "Negara dengan populasi terbanyak?",
+        choices: ["India", "China", "USA", "Indonesia"],
+        answer: "China"
+      },
+      {
+        question: "Simbol kimia emas?",
+        choices: ["Au", "Ag", "Fe", "Pb"],
+        answer: "Au"
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let quizStarted = false;
+    
+    // Create particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random properties
+        const size = Math.random() * 5 + 2;
+        const posX = Math.random() * 100;
+        const duration = Math.random() * 10 + 10;
+        const delay = Math.random() * 5;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.bottom = `-${size}px`;
+        particle.style.animationDuration = `${duration}s`;
+        particle.style.animationDelay = `${delay}s`;
+        
+        // Random color
+        const colors = ['#00f7ff', '#ff00e4', '#7700ff', '#ffffff'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.backgroundColor = randomColor;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Create confetti
+    function createConfetti() {
+      const confettiCount = 100;
+      
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        
+        // Random properties
+        const size = Math.random() * 10 + 5;
+        const posX = Math.random() * 100;
+        const duration = Math.random() * 3 + 2;
+        const delay = Math.random() * 2;
+        
+        confetti.style.width = `${size}px`;
+        confetti.style.height = `${size}px`;
+        confetti.style.left = `${posX}%`;
+        confetti.style.top = `-${size}px`;
+        confetti.style.animationDuration = `${duration}s`;
+        confetti.style.animationDelay = `${delay}s`;
+        
+        // Random shape
+        const shapes = ['circle', 'square'];
+        const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+        if (randomShape === 'square') {
+          confetti.style.borderRadius = '2px';
+        }
+        
+        // Random color
+        const colors = ['#00f7ff', '#ff00e4', '#7700ff', '#00ff88', '#ffffff'];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.backgroundColor = randomColor;
+        
+        document.body.appendChild(confetti);
+        
+        // Remove confetti after animation
+        setTimeout(() => {
+          confetti.remove();
+        }, duration * 1000);
+      }
+    }
+    
+    // Start the quiz
+    function startQuiz() {
+      quizStarted = true;
+      currentQuestion = 0;
+      score = 0;
+      
+      document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('back-btn').style.display = 'none';
+      document.getElementById('score-container').classList.remove('show');
+      
+      showQuestion();
+    }
+    
+    // Show current question
+    function showQuestion() {
+      if (currentQuestion >= questions.length) {
+        endQuiz();
+        return;
+      }
+      
+      // Update progress bar
+      const progress = ((currentQuestion) / questions.length) * 100;
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+      
+      // Update question counter
+      document.getElementById('question-counter').textContent = `Pertanyaan ${currentQuestion + 1}/${questions.length}`;
+      
+      const q = questions[currentQuestion];
+      document.getElementById('question').textContent = q.question;
+      
+      const choicesDiv = document.getElementById('choices');
+      choicesDiv.innerHTML = '';
+      
+      q.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.classList.add('choice-btn');
+        btn.textContent = choice;
+        btn.onclick = () => selectAnswer(choice);
+        choicesDiv.appendChild(btn);
+      });
+    }
+    
+    // Handle answer selection
+    function selectAnswer(selected) {
+      if (!quizStarted) return;
+      
+      const correctAnswer = questions[currentQuestion].answer;
+      const buttons = document.querySelectorAll('.choice-btn');
+      
+      // Disable all buttons
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === correctAnswer) {
+          btn.classList.add('correct');
+        } else if (btn.textContent === selected && selected !== correctAnswer) {
+          btn.classList.add('wrong');
+        }
+      });
+      
+      // Check if answer is correct
+      if (selected === correctAnswer) {
+        score++;
+      }
+      
+      // Move to next question after delay
+      setTimeout(() => {
+        currentQuestion++;
+        showQuestion();
+      }, 1500);
+    }
+    
+    // End the quiz
+    function endQuiz() {
+      quizStarted = false;
+      
+      document.getElementById('question').textContent = 'Quiz Selesai!';
+      document.getElementById('choices').innerHTML = '';
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('start-btn').style.display = 'inline-block';
+      document.getElementById('start-btn').textContent = 'Main Lagi';
+      document.getElementById('back-btn').style.display = 'inline-block';
+      
+      const scoreContainer = document.getElementById('score-container');
+      const scoreElement = document.getElementById('score');
+      const messageElement = document.getElementById('message');
+      
+      scoreElement.textContent = `Skor Anda: ${score}/${questions.length}`;
+      
+      // Custom message based on score
+      const percentage = (score / questions.length) * 100;
+      let message = '';
+      
+      if (percentage >= 90) {
+        message = 'Luar biasa! Pengetahuan Anda sangat mengagumkan!';
+        createConfetti();
+      } else if (percentage >= 70) {
+        message = 'Bagus! Anda memiliki pengetahuan yang solid.';
+      } else if (percentage >= 50) {
+        message = 'Cukup baik! Masih ada ruang untuk berkembang.';
+      } else {
+        message = 'Terus belajar! Anda bisa lebih baik lagi.';
+      }
+      
+      messageElement.textContent = message;
+      scoreContainer.classList.add('show');
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+      
+      document.getElementById('start-btn').addEventListener('click', startQuiz);
+    });
+  </script>
+</body>
+</html>

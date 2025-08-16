@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRAVITY FLIP 3000</title>
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --secondary: #ff00f7;
+            --bg: #0a0a20;
+            --player: #00ff88;
+            --finish: #ffcc00;
+            --obstacle: #ff0055;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1a1a3a 0%, #0a0a20 100%);
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        #header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+            animation: pulse 2s infinite alternate;
+        }
+        
+        #stats {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .control-btn {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--primary);
+            color: white;
+            padding: 15px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .control-btn:hover {
+            background: rgba(0, 247, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: var(--player);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--player);
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+        
+        #finish {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: var(--finish);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--finish);
+            z-index: 5;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        .obstacle {
+            position: absolute;
+            background-color: var(--obstacle);
+            box-shadow: 0 0 10px var(--obstacle);
+            border-radius: 5px;
+        }
+        
+        #cooldown-bar {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        #cooldown-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.1s;
+        }
+        
+        #cooldown-text {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: rgba(0, 247, 255, 0.5);
+            border-radius: 50%;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        #level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 200;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: var(--obstacle);
+            text-shadow: 0 0 10px var(--obstacle);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 200;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="particles"></div>
+        
+        <div id="ui-overlay">
+            <div id="header">GRAVITY FLIP 3000</div>
+            <div id="stats">
+                <div>LEVEL: <span id="level-display">1</span></div>
+                <div>SCORE: <span id="score-display">0</span></div>
+            </div>
+            
+            <div id="cooldown-text">GRAVITY FLIP READY</div>
+            <div id="cooldown-bar">
+                <div id="cooldown-progress"></div>
+            </div>
+            
+            <div id="controls">
+                <button class="control-btn" id="back-btn">MENU</button>
+                <button class="control-btn" id="flip-btn">FLIP GRAVITY</button>
+                <button class="control-btn" id="restart-btn">RESTART</button>
+            </div>
+        </div>
+        
+        <div id="player"></div>
+        <div id="finish"></div>
+        
+        <div id="level-complete">LEVEL COMPLETE!</div>
+        <div id="game-over">COLLISION DETECTED!</div>
+    </div>
+
+    <script>
+        // Game elements
+        const gameContainer = document.getElementById('game-container');
+        const player = document.getElementById('player');
+        const finish = document.getElementById('finish');
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const flipBtn = document.getElementById('flip-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const backBtn = document.getElementById('back-btn');
+        const cooldownProgress = document.getElementById('cooldown-progress');
+        const cooldownText = document.getElementById('cooldown-text');
+        const levelComplete = document.getElementById('level-complete');
+        const gameOver = document.getElementById('game-over');
+        const particlesContainer = document.getElementById('particles');
+
+        // Game state
+        let playerPos = { x: 50, y: window.innerHeight - 50 };
+        let gravityDown = true;
+        let level = 1;
+        let score = 0;
+        let verticalSpeed = 5;
+        let horizontalSpeed = 8;
+        let verticalInterval;
+        let flipCooldown = 0;
+        let maxCooldown = 0; 
+        let obstacles = [];
+        let keys = {};
+        let gameActive = true;
+
+        // Create particles for background
+        function createParticles() {
+            const particleCount = 100;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.width = `${Math.random() * 3 + 1}px`;
+                particle.style.height = particle.style.width;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animation = `float ${Math.random() * 10 + 5}s infinite ease-in-out`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Generate level obstacles
+        function generateLevel() {
+            // Clear existing obstacles
+            obstacles.forEach(obs => {
+                if (obs.element && obs.element.parentNode) {
+                    obs.element.parentNode.removeChild(obs.element);
+                }
+            });
+            obstacles = [];
+
+            // Generate new obstacles based on level
+            const obstacleCount = Math.min(3 + Math.floor(level / 2), 10);
+            for (let i = 0; i < obstacleCount; i++) {
+                const width = 50 + Math.random() * 100;
+                const height = 20;
+                const x = 100 + Math.random() * (window.innerWidth - 200 - width);
+                const y = 100 + Math.random() * (window.innerHeight - 200 - height);
+                
+                const obstacle = document.createElement('div');
+                obstacle.classList.add('obstacle');
+                obstacle.style.left = `${x}px`;
+                obstacle.style.top = `${y}px`;
+                obstacle.style.width = `${width}px`;
+                obstacle.style.height = `${height}px`;
+                gameContainer.appendChild(obstacle);
+                
+                obstacles.push({
+                    element: obstacle,
+                    x, y, width, height
+                });
+            }
+
+            // Position finish in a challenging location
+            let finishX, finishY;
+            if (level % 2 === 0) {
+                // Right side
+                finishX = window.innerWidth - 100;
+                finishY = 100 + Math.random() * (window.innerHeight - 200);
+            } else {
+                // Top side
+                finishX = 100 + Math.random() * (window.innerWidth - 200);
+                finishY = 100;
+            }
+            
+            finish.style.left = `${finishX}px`;
+            finish.style.top = `${finishY}px`;
+            
+            // Reset player position
+            playerPos = { x: 50, y: window.innerHeight - 50 };
+            player.style.left = `${playerPos.x}px`;
+            player.style.top = `${playerPos.y}px`;
+            
+            // Reset gravity
+            gravityDown = true;
+            
+            // Update UI
+            levelDisplay.textContent = level;
+        }
+
+        // Check collision between player and obstacles
+        function checkCollision(px, py) {
+            // Check walls
+            if (px < 0 || px > window.innerWidth - 30 || py < 0 || py > window.innerHeight - 30) {
+                return true;
+            }
+            
+            // Check obstacles
+            for (const obs of obstacles) {
+                if (px < obs.x + obs.width &&
+                    px + 30 > obs.x &&
+                    py < obs.y + obs.height &&
+                    py + 30 > obs.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Check if player reached finish
+        function checkFinish() {
+            const finishRect = finish.getBoundingClientRect();
+            const playerRect = player.getBoundingClientRect();
+            
+            if (playerRect.left < finishRect.right &&
+                playerRect.right > finishRect.left &&
+                playerRect.top < finishRect.bottom &&
+                playerRect.bottom > finishRect.top) {
+                return true;
+            }
+            return false;
+        }
+
+        // Handle vertical movement based on gravity
+        function startVerticalMovement() {
+            clearInterval(verticalInterval);
+            verticalInterval = setInterval(() => {
+                if (!gameActive) return;
+                
+                let newY = playerPos.y + (gravityDown ? -verticalSpeed : verticalSpeed);
+                
+                if (checkCollision(playerPos.x, newY)) {
+                    endGame();
+                    return;
+                }
+                
+                playerPos.y = newY;
+                player.style.top = `${playerPos.y}px`;
+                
+                if (checkFinish()) {
+                    completeLevel();
+                }
+            }, 20);
+        }
+
+        // Handle horizontal movement based on keyboard input
+        function handleHorizontalMovement() {
+            if (!gameActive) return;
+            
+            let newX = playerPos.x;
+            
+            if (keys['ArrowLeft'] || keys['a']) {
+                newX -= horizontalSpeed;
+            }
+            if (keys['ArrowRight'] || keys['d']) {
+                newX += horizontalSpeed;
+            }
+            
+            if (checkCollision(newX, playerPos.y)) {
+                endGame();
+                return;
+            }
+            
+            playerPos.x = newX;
+            player.style.left = `${playerPos.x}px`;
+            
+            if (checkFinish()) {
+                completeLevel();
+            }
+        }
+
+        // Flip gravity direction
+        function flipGravity() {
+            if (flipCooldown > 0 || !gameActive) return;
+            
+            gravityDown = !gravityDown;
+            flipCooldown = maxCooldown;
+            flipBtn.disabled = true;
+            
+            // Visual feedback
+            player.style.transform = gravityDown ? 'rotate(0deg)' : 'rotate(180deg)';
+            
+            // Start cooldown
+            const cooldownInterval = setInterval(() => {
+                flipCooldown -= 0.1;
+                cooldownProgress.style.width = `${100 - (flipCooldown / maxCooldown) * 100}%`;
+                
+                if (flipCooldown <= 0) {
+                    flipCooldown = 0;
+                    cooldownText.textContent = "GRAVITY FLIP READY";
+                    flipBtn.disabled = false;
+                    clearInterval(cooldownInterval);
+                } else {
+                    cooldownText.textContent = `COOLDOWN: ${flipCooldown.toFixed(1)}s`;
+                }
+            }, 100);
+        }
+
+        // Complete current level
+        function completeLevel() {
+            gameActive = false;
+            clearInterval(verticalInterval);
+            
+            // Update score
+            score += level * 10;
+            scoreDisplay.textContent = score;
+            
+            // Show level complete message
+            levelComplete.style.opacity = 1;
+            
+            // Prepare next level
+            setTimeout(() => {
+                levelComplete.style.opacity = 0;
+                level++;
+                gameActive = true;
+                generateLevel();
+                startVerticalMovement();
+            }, 1500);
+        }
+
+        // End game (collision)
+        function endGame() {
+            gameActive = false;
+            clearInterval(verticalInterval);
+            
+            // Show game over message
+            gameOver.style.opacity = 1;
+            
+            // Reset after delay
+            setTimeout(() => {
+                gameOver.style.opacity = 0;
+                restartGame();
+            }, 1500);
+        }
+
+        // Restart current level
+        function restartGame() {
+            gameActive = true;
+            generateLevel();
+            startVerticalMovement();
+        }
+
+        // Initialize game
+        function initGame() {
+            createParticles();
+            generateLevel();
+            startVerticalMovement();
+            
+            // Keyboard controls
+            window.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+            });
+            
+            window.addEventListener('keyup', (e) => {
+                keys[e.key] = false;
+            });
+            
+            // Game loop for horizontal movement
+            setInterval(handleHorizontalMovement, 16);
+            
+            // Button controls
+            flipBtn.addEventListener('click', flipGravity);
+            restartBtn.addEventListener('click', restartGame);
+            backBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // Responsive adjustments
+            window.addEventListener('resize', () => {
+                generateLevel();
+            });
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>

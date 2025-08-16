@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Evasion | Futuristic Space Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #000428, #0a0e2e, #1a1a2e);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            perspective: 1000px;
+        }
+        
+        #gameContainer {
+            position: relative;
+            margin: 0 auto;
+            transform-style: preserve-3d;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: auto;
+            background: transparent;
+            box-shadow: 0 0 50px rgba(0, 183, 255, 0.3);
+            border-radius: 5px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+        }
+        
+        h1 {
+            margin: 10px 0;
+            color: #00f7ff;
+            text-shadow: 0 0 15px #00f7ff, 0 0 30px #00f7ff;
+            font-size: 2.5rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #00f7ff, #00a2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 2s infinite alternate;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            color: #00f7ff;
+            text-decoration: none;
+            border: 2px solid #00f7ff;
+            border-radius: 50px;
+            background: rgba(0, 247, 255, 0.1);
+            box-shadow: 0 0 15px #00f7ff;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .back-btn:hover {
+            background: rgba(0, 247, 255, 0.3);
+            box-shadow: 0 0 30px #00f7ff, 0 0 60px #00f7ff;
+            transform: translateY(-3px);
+        }
+        
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 247, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+        
+        .back-btn:hover::before {
+            left: 100%;
+        }
+        
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        #gameOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* pointer-events diubah menjadi auto */
+            pointer-events: auto;
+            z-index: 10;
+            display: none;
+        }
+        
+        /* Style untuk tombol restart */
+        #restartBtn {
+            position: absolute;
+            left: 50%;
+            top: 60%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: #00f7ff;
+            border: 2px solid #00f7ff;
+            border-radius: 50px;
+            background: rgba(0, 247, 255, 0.1);
+            box-shadow: 0 0 15px #00f7ff;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 11;
+            display: none;
+        }
+        
+        #restartBtn:hover {
+            background: rgba(0, 247, 255, 0.3);
+            box-shadow: 0 0 30px #00f7ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="stars"></div>
+    
+    <h1>⚡ Nebula Evasion ⚡</h1>
+    
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div id="gameOverlay"></div>
+        <button id="restartBtn">RETRY MISSION</button>
+    </div>
+    
+    <a href="index.html" class="back-btn">⬅︎ Return to Homebase</a>
+
+    <script>
+        // Create stars background
+        const stars = document.getElementById('stars');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.backgroundColor = 'white';
+            star.style.borderRadius = '50%';
+            star.style.top = Math.random() * 100 + 'vh';
+            star.style.left = Math.random() * 100 + 'vw';
+            star.style.opacity = Math.random();
+            star.style.boxShadow = `0 0 ${Math.random() * 10 + 5}px white`;
+            
+            // Add twinkle animation
+            star.style.animation = `twinkle ${Math.random() * 5 + 3}s infinite alternate`;
+            stars.appendChild(star);
+        }
+        
+        // Add CSS for twinkle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes twinkle {
+                0% { opacity: 0.3; }
+                100% { opacity: ${Math.random() * 0.7 + 0.3}; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const overlay = document.getElementById("gameOverlay");
+        const restartBtn = document.getElementById("restartBtn");
+
+        // Enhanced ship with thruster effect
+        let ship = { 
+            x: 180, 
+            y: 550, 
+            width: 40, 
+            height: 60, 
+            speed: 7,
+            thrusterOn: false,
+            thrusterSize: 0
+        };
+        
+        let meteors = [];
+        let particles = [];
+        let score = 0;
+        let gameOver = false;
+        let lastMeteorTime = 0;
+        let difficulty = 1;
+        let isMoving = false;
+        let moveDirection = 0; // -1 for left, 1 for right, 0 for none
+        
+        // Improved controls with smoother movement
+        document.addEventListener("keydown", e => {
+            if (e.key === "ArrowLeft") {
+                moveDirection = -1;
+                isMoving = true;
+            }
+            if (e.key === "ArrowRight") {
+                moveDirection = 1;
+                isMoving = true;
+            }
+            if (e.key === " ") { // Space for thruster
+                ship.thrusterOn = true;
+            }
+        });
+        
+        document.addEventListener("keyup", e => {
+            if (e.key === "ArrowLeft" && moveDirection === -1) {
+                moveDirection = 0;
+                isMoving = false;
+            }
+            if (e.key === "ArrowRight" && moveDirection === 1) {
+                moveDirection = 0;
+                isMoving = false;
+            }
+            if (e.key === " ") {
+                ship.thrusterOn = false;
+            }
+        });
+        
+        // Touch controls for mobile
+        let touchStartX = 0;
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            const touchX = e.touches[0].clientX;
+            const touchDiff = touchX - touchStartX;
+            
+            if (Math.abs(touchDiff) > 10) {
+                if (touchDiff > 0) {
+                    moveDirection = 1;
+                } else {
+                    moveDirection = -1;
+                }
+                isMoving = true;
+            }
+            e.preventDefault();
+        });
+        
+        canvas.addEventListener('touchend', () => {
+            moveDirection = 0;
+            isMoving = false;
+        });
+        
+        function createMeteor() {
+            const now = Date.now();
+            if (now - lastMeteorTime < 1000 / difficulty) return;
+            lastMeteorTime = now;
+            
+            let size = Math.random() * 40 + 20;
+            const meteorTypes = ['orange', 'blue', 'purple'];
+            const meteorType = meteorTypes[Math.floor(Math.random() * meteorTypes.length)];
+            
+            meteors.push({
+                x: Math.random() * (canvas.width - size),
+                y: -size,
+                width: size,
+                height: size,
+                speed: Math.random() * 3 * difficulty + 2,
+                rotation: 0,
+                rotationSpeed: Math.random() * 0.05 - 0.025,
+                type: meteorType,
+                glow: Math.random() * 10 + 5
+            });
+            
+            // Increase difficulty gradually
+            if (score % 10 === 0) {
+                difficulty = Math.min(3, difficulty + 0.1);
+            }
+        }
+        
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 3 + 1,
+                    color: color,
+                    speedX: Math.random() * 6 - 3,
+                    speedY: Math.random() * 6 - 3,
+                    life: Math.random() * 30 + 20,
+                    opacity: 1
+                });
+            }
+        }
+        
+        function drawShip() {
+            // Ship body
+            ctx.save();
+            ctx.translate(ship.x + ship.width/2, ship.y + ship.height/2);
+            
+            // Thruster effect
+            if (ship.thrusterOn) {
+                ship.thrusterSize = Math.min(30, ship.thrusterSize + 2);
+                
+                // Thruster glow
+                const gradient = ctx.createRadialGradient(0, ship.height/2 + 5, 5, 0, ship.height/2 + 5, ship.thrusterSize);
+                gradient.addColorStop(0, 'rgba(0, 247, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 247, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.ellipse(0, ship.height/2 + 5, ship.thrusterSize/2, ship.thrusterSize, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Create thruster particles
+                if (Math.random() < 0.3) {
+                    createParticles(0, ship.height/2 + 10, '#00f7ff', 3);
+                }
+            } else {
+                ship.thrusterSize = Math.max(0, ship.thrusterSize - 1);
+            }
+            
+            // Ship main body
+            ctx.fillStyle = '#00f7ff';
+            ctx.beginPath();
+            ctx.moveTo(-ship.width/2, -ship.height/2);
+            ctx.lineTo(0, ship.height/2);
+            ctx.lineTo(ship.width/2, -ship.height/2);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Ship cockpit
+            ctx.fillStyle = 'rgba(150, 240, 255, 0.7)';
+            ctx.beginPath();
+            ctx.ellipse(0, -ship.height/6, ship.width/4, ship.height/6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ship glow
+            ctx.shadowColor = '#00f7ff';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        function drawMeteor(meteor) {
+            ctx.save();
+            ctx.translate(meteor.x + meteor.width/2, meteor.y + meteor.height/2);
+            ctx.rotate(meteor.rotation);
+            
+            // Meteor glow
+            ctx.shadowColor = meteor.type === 'orange' ? 'orange' : 
+                             meteor.type === 'blue' ? '#00a2ff' : '#b300ff';
+            ctx.shadowBlur = meteor.glow;
+            
+            // Meteor body
+            ctx.fillStyle = meteor.type === 'orange' ? '#ff7b00' : 
+                           meteor.type === 'blue' ? '#0095ff' : '#9900ff';
+            ctx.beginPath();
+            ctx.arc(0, 0, meteor.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Meteor details
+            ctx.fillStyle = meteor.type === 'orange' ? '#ff9d42' : 
+                           meteor.type === 'blue' ? '#5fb8ff' : '#c266ff';
+            ctx.beginPath();
+            ctx.arc(0, 0, meteor.width/3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function update() {
+            if (gameOver) return;
+            
+            // Clear with fade effect
+            ctx.fillStyle = 'rgba(0, 4, 40, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update ship position
+            if (isMoving) {
+                ship.x += ship.speed * moveDirection;
+                
+                // Create movement particles
+                if (Math.random() < 0.1) {
+                    createParticles(
+                        ship.x + (moveDirection > 0 ? 0 : ship.width), 
+                        ship.y + ship.height/2, 
+                        '#00f7ff', 
+                        1
+                    );
+                }
+            }
+            
+            // Ship boundaries
+            ship.x = Math.max(0, Math.min(canvas.width - ship.width, ship.x));
+            
+            // Draw particles
+            particles.forEach((p, i) => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.life--;
+                p.opacity = p.life / 50;
+                
+                ctx.fillStyle = `${p.color.replace(')', `, ${p.opacity})`)}`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            });
+            
+            // Draw ship
+            drawShip();
+            
+            // Meteors
+            meteors.forEach((m, i) => {
+                m.y += m.speed;
+                m.rotation += m.rotationSpeed;
+                
+                drawMeteor(m);
+                
+                // Collision check
+                if (m.x < ship.x + ship.width &&
+                    m.x + m.width > ship.x &&
+                    m.y < ship.y + ship.height &&
+                    m.y + m.height > ship.y) {
+                    // Explosion effect
+                    createParticles(
+                        m.x + m.width/2, 
+                        m.y + m.height/2, 
+                        m.type === 'orange' ? 'orange' : 
+                        m.type === 'blue' ? '#00a2ff' : '#b300ff', 
+                        50
+                    );
+                    
+                    gameOver = true;
+                    showGameOver();
+                }
+                
+                // Remove meteor if off-screen
+                if (m.y > canvas.height) {
+                    meteors.splice(i, 1);
+                    score++;
+                    
+                    // Score particle effect
+                    createParticles(
+                        m.x + m.width/2, 
+                        canvas.height, 
+                        '#00ff88', 
+                        5
+                    );
+                }
+            });
+            
+            // Score display
+            ctx.fillStyle = "white";
+            ctx.font = "20px 'Orbitron', sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`SCORE: ${score}`, 20, 30);
+            
+            // Difficulty display
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            ctx.font = "14px 'Orbitron', sans-serif";
+            ctx.fillText(`DIFFICULTY: ${difficulty.toFixed(1)}`, 20, 50);
+            
+            if (!gameOver) {
+                createMeteor();
+                requestAnimationFrame(update);
+            }
+        }
+        
+        function showGameOver() {
+            // Game over effect
+            ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "white";
+            ctx.font = "40px 'Orbitron', sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("MISSION FAILED", canvas.width/2, canvas.height/2 - 30);
+            
+            ctx.fillStyle = "#00f7ff";
+            ctx.font = "24px 'Orbitron', sans-serif";
+            ctx.fillText(`FINAL SCORE: ${score}`, canvas.width/2, canvas.height/2 + 20);
+            
+            // Show overlay and restart button
+            overlay.style.display = 'block';
+            restartBtn.style.display = 'block';
+        }
+        
+        // Restart game function
+        restartBtn.addEventListener('click', () => {
+            // Reset game state
+            ship = { 
+                x: 180, 
+                y: 550, 
+                width: 40, 
+                height: 60, 
+                speed: 7,
+                thrusterOn: false,
+                thrusterSize: 0
+            };
+            meteors = [];
+            particles = [];
+            score = 0;
+            gameOver = false;
+            difficulty = 1;
+            
+            // Hide overlay and restart button
+            overlay.style.display = 'none';
+            restartBtn.style.display = 'none';
+            
+            // Start new game
+            update();
+        });
+        
+        // Start the game with a cool intro effect
+        setTimeout(() => {
+            for (let i = 0; i < 100; i++) {
+                createParticles(
+                    Math.random() * canvas.width, 
+                    Math.random() * canvas.height, 
+                    '#00f7ff', 
+                    1
+                );
+            }
+            update();
+        }, 500);
+    </script>
+</body>
+</html>

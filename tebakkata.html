@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tebak Kata | Futuristik</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0fffc1;
+      --secondary: #00a1ff;
+      --dark: #0a192f;
+      --darker: #020c1b;
+      --neon-glow: 0 0 10px rgba(0, 255, 255, 0.8),
+                  0 0 20px rgba(0, 255, 255, 0.6),
+                  0 0 30px rgba(0, 255, 255, 0.4);
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+      background: var(--dark);
+      margin: 0;
+      padding: 0;
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(0, 161, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 80% 70%, rgba(0, 255, 193, 0.1) 0%, transparent 20%);
+    }
+    
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--duration, 5s) infinite ease-in-out;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: rgba(10, 25, 47, 0.8);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 161, 255, 0.2);
+      border: 1px solid rgba(0, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      z-index: -1;
+      border-radius: 16px;
+      animation: rotate 10s linear infinite;
+    }
+    
+    .container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--dark);
+      border-radius: 15px;
+      z-index: -1;
+    }
+    
+    @keyframes rotate {
+      0% { filter: blur(5px) hue-rotate(0deg); }
+      100% { filter: blur(5px) hue-rotate(360deg); }
+    }
+    
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--primary);
+      text-shadow: var(--neon-glow);
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      letter-spacing: 3px;
+      position: relative;
+      display: inline-block;
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      box-shadow: 0 0 10px var(--primary);
+    }
+    
+    .word {
+      font-size: 2rem;
+      letter-spacing: 10px;
+      margin: 30px 0;
+      font-family: 'Orbitron', sans-serif;
+      color: var(--secondary);
+      text-shadow: 0 0 5px rgba(0, 161, 255, 0.8);
+      min-height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    input {
+      padding: 15px;
+      font-size: 1.2rem;
+      width: 60px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      color: white;
+      border-radius: 5px;
+      margin: 10px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+    
+    .button-group {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 25px 0;
+    }
+    
+    button {
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--darker);
+      font-weight: bold;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 255, 255, 0.5);
+    }
+    
+    button:hover::before {
+      opacity: 1;
+    }
+    
+    button:active {
+      transform: translateY(1px);
+    }
+    
+    .info {
+      margin: 15px 0;
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(0, 0, 0, 0.2);
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 3px solid var(--primary);
+    }
+    
+    .info span {
+      color: var(--primary);
+      font-weight: bold;
+    }
+    
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: rgba(10, 25, 47, 0.7);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .back-btn:hover {
+      background: var(--primary);
+      color: var(--dark);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    }
+    
+    .back-btn i {
+      font-size: 1.2rem;
+    }
+    
+    .clue {
+      margin: 15px 0;
+      font-size: 1.1rem;
+      color: var(--primary);
+      font-style: italic;
+      min-height: 20px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      border-left: 3px solid var(--secondary);
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .word {
+        font-size: 1.5rem;
+        letter-spacing: 5px;
+      }
+    }
+    
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Particle effects for correct guess */
+    .particle {
+      position: absolute;
+      background: var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background stars -->
+  <div class="stars" id="stars"></div>
+  
+  <!-- Back button -->
+  <button class="back-btn" onclick="window.location.href='index.html'">
+    <i>←</i> Kembali
+  </button>
+  
+  <div class="container floating">
+    <h1>TEBAK KATA</h1>
+    <div class="word" id="displayWord">TEKAN MULAI UNTUK BERMAIN</div>
+    <div class="clue" id="clueDisplay">-</div>
+    <input type="text" id="guessInput" placeholder="?" maxlength="1" autocomplete="off">
+    <div class="button-group">
+      <button onclick="startGame()">MULAI</button>
+      <button onclick="checkGuess()">TEBAK</button>
+    </div>
+    <div class="info" id="attempts">KESEMPATAN TERSISA: <span>10</span></div>
+    <div class="info" id="guessedLetters">HURUF DITEBAK: <span>-</span></div>
+  </div>
+
+  <script>
+    // Create stars
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 100; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      star.style.width = `${Math.random() * 3}px`;
+      star.style.height = star.style.width;
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.opacity = Math.random();
+      star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+      starsContainer.appendChild(star);
+    }
+
+    const words = [
+      { word: "javascript", clue: "Bahasa pemrograman untuk web yang bisa berjalan di browser" },
+      { word: "python", clue: "Bahasa pemrograman populer dengan sintaks yang mudah dibaca" },
+      { word: "komputer", clue: "Alat elektronik untuk memproses data" },
+      { word: "internet", clue: "Jaringan global yang menghubungkan komputer di seluruh dunia" },
+      { word: "browser", clue: "Perangkat lunak untuk mengakses internet (Chrome, Firefox, dll)" },
+      { word: "website", clue: "Kumpulan halaman web yang dapat diakses melalui internet" },
+      { word: "program", clue: "Kumpulan instruksi yang ditulis untuk menjalankan suatu tugas" },
+      { word: "game", clue: "Permainan interaktif yang dimainkan di perangkat elektronik" },
+      { word: "database", clue: "Tempat penyimpanan data terstruktur" },
+      { word: "network", clue: "Jaringan komputer yang saling terhubung" },
+      { word: "artificial", clue: "Kecerdasan buatan (awalan dari AI)" },
+      { word: "intelligence", clue: "Kecerdasan, bagian belakang dari AI" },
+      { word: "cyberspace", clue: "Dunia maya atau ruang digital" },
+      { word: "algorithm", clue: "Langkah-langkah logis untuk menyelesaikan masalah" },
+      { word: "quantum", clue: "Komputer jenis baru yang menggunakan fisika kuantum" },
+      { word: "nanotech", clue: "Teknologi yang bekerja pada skala nanometer" },
+      { word: "hologram", clue: "Gambar 3D yang dibuat dengan laser" },
+      { word: "virtual", clue: "Realitas maya (awalan dari VR)" },
+      { word: "augmented", clue: "Realitas tambahan (awalan dari AR)" },
+      { word: "blockchain", clue: "Teknologi di balik cryptocurrency seperti Bitcoin" }
+    ];
+
+    let selectedWord = "";
+    let currentClue = "";
+    let displayWord = [];
+    let guessedLetters = [];
+    let attemptsLeft = 10;
+
+    function startGame() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      selectedWord = words[randomIndex].word.toLowerCase();
+      currentClue = words[randomIndex].clue;
+      displayWord = Array(selectedWord.length).fill("_");
+      guessedLetters = [];
+      attemptsLeft = 10;
+      updateDisplay();
+      document.getElementById('guessInput').value = "";
+      document.getElementById('guessInput').focus();
+      document.getElementById('clueDisplay').textContent = currentClue;
+    }
+
+    function checkGuess() {
+      const input = document.getElementById('guessInput').value.toLowerCase();
+      if (!input || guessedLetters.includes(input)) return;
+
+      guessedLetters.push(input);
+
+      if (selectedWord.includes(input)) {
+        // Create particles for correct guess
+        createParticles();
+        
+        for (let i = 0; i < selectedWord.length; i++) {
+          if (selectedWord[i] === input) {
+            displayWord[i] = input;
+          }
+        }
+      } else {
+        attemptsLeft--;
+        // Shake animation for wrong guess
+        document.getElementById('guessInput').classList.add('shake');
+        setTimeout(() => {
+          document.getElementById('guessInput').classList.remove('shake');
+        }, 500);
+      }
+
+      updateDisplay();
+      document.getElementById('guessInput').value = "";
+
+      if (!displayWord.includes("_")) {
+        setTimeout(() => {
+          alert(`Selamat! Kamu menebak kata: ${selectedWord.toUpperCase()}`);
+          createConfetti();
+        }, 300);
+      } else if (attemptsLeft <= 0) {
+        setTimeout(() => {
+          alert(`Game over! Kata yang benar: ${selectedWord.toUpperCase()}`);
+        }, 300);
+      }
+    }
+
+    function updateDisplay() {
+      document.getElementById('displayWord').innerText = displayWord.join(" ");
+      document.getElementById('attempts').innerHTML = `KESEMPATAN TERSISA: <span>${attemptsLeft}</span>`;
+      document.getElementById('guessedLetters').innerHTML = `HURUF DITEBAK: <span>${guessedLetters.join(", ") || "-"}</span>`;
+    }
+
+    function createParticles() {
+      const input = document.getElementById('guessInput');
+      const rect = input.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = `${centerX}px`;
+        particle.style.top = `${centerY}px`;
+        particle.style.width = `${Math.random() * 5 + 2}px`;
+        particle.style.height = particle.style.width;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 5 + 2;
+        const x = Math.cos(angle) * velocity;
+        const y = Math.sin(angle) * velocity;
+        
+        document.body.appendChild(particle);
+        
+        let posX = centerX;
+        let posY = centerY;
+        let opacity = 1;
+        
+        const animate = () => {
+          posX += x;
+          posY += y;
+          opacity -= 0.02;
+          
+          particle.style.left = `${posX}px`;
+          particle.style.top = `${posY}px`;
+          particle.style.opacity = opacity;
+          
+          if (opacity > 0) {
+            requestAnimationFrame(animate);
+          } else {
+            particle.remove();
+          }
+        };
+        
+        requestAnimationFrame(animate);
+      }
+    }
+
+    function createConfetti() {
+      const container = document.querySelector('.container');
+      const colors = ['#0fffc1', '#00a1ff', '#ff00aa', '#ffff00', '#ffffff'];
+      
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('particle');
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.top = `-10px`;
+        confetti.style.width = `${Math.random() * 10 + 5}px`;
+        confetti.style.height = `${Math.random() * 10 + 5}px`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        
+        container.appendChild(confetti);
+        
+        const animationDuration = Math.random() * 3 + 2;
+        confetti.style.animation = `confetti-fall ${animationDuration}s linear forwards`;
+        
+        setTimeout(() => {
+          confetti.remove();
+        }, animationDuration * 1000);
+      }
+      
+      // Add CSS animation for confetti
+      const style = document.createElement('style');
+      style.innerHTML = `
+        @keyframes confetti-fall {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Allow pressing Enter to guess
+    document.getElementById('guessInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkGuess();
+      }
+    });
+
+    // Add shake animation to CSS
+    const shakeStyle = document.createElement('style');
+    shakeStyle.innerHTML = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+      }
+      .shake {
+        animation: shake 0.5s;
+      }
+    `;
+    document.head.appendChild(shakeStyle);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platformer Duel Ultimate Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Orbitron:wght@500&display=swap');
+
+:root {
+  --player1-color: #ff3e3e;
+  --player2-color: #3e7dff;
+  --platform-color: #5e3a1e;
+  --finish-color: #ffd700;
+  --powerup-color: #00ff7f;
+  --obstacle-color: #8a2be2;
+  --bg-color: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --text-color: #fff;
+  --accent-color: #f05454;
+  --menu-bg: rgba(10, 10, 30, 0.95);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background 0.5s ease;
+}
+
+/* Main Menu Styles */
+#mainMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--menu-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.5s ease;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(240, 84, 84, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(62, 125, 255, 0.1) 0%, transparent 50%);
+}
+
+#mainMenu h1 {
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+  font-size: 4.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  animation: glow 2s infinite alternate;
+  background: linear-gradient(90deg, #f05454, #3e7dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  position: relative;
+}
+
+#mainMenu h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #f05454, #3e7dff, transparent);
+}
+
+.menu-btn {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: white;
+  margin: 10px;
+  width: 250px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--accent-color);
+}
+
+.menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(240, 84, 84, 0.4), transparent);
+  transition: 0.5s;
+}
+
+.menu-btn:hover::before {
+  left: 100%;
+}
+
+.menu-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(240, 84, 84, 0.4);
+}
+
+.menu-btn:active {
+  transform: translateY(0);
+}
+
+#gameContainer {
+  position: relative;
+  width: 800px;
+  height: 500px;
+  margin: 20px auto;
+  border: 4px solid #000;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #1a1a2e, #16213e);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: none;
+}
+
+.player {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  border-radius: 50%;
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+#player1 {
+  background: var(--player1-color);
+  left: 50px;
+  bottom: 0;
+  border: 2px solid #fff;
+}
+
+#player2 {
+  background: var(--player2-color);
+  left: 700px;
+  bottom: 0;
+  border: 2px solid #fff;
+}
+
+.platform {
+  position: absolute;
+  background: var(--platform-color);
+  border-radius: 10px;
+  box-shadow: inset 0 -5px 10px rgba(0, 0, 0, 0.5);
+  border-bottom: 3px solid #3a2818;
+  z-index: 5;
+}
+
+.finish {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: var(--finish-color);
+  border-radius: 50%;
+  box-shadow: 0 0 20px gold;
+  animation: pulse 1.5s infinite alternate;
+  z-index: 5;
+}
+
+.powerup {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background: var(--powerup-color);
+  border-radius: 50%;
+  box-shadow: 0 0 10px lime;
+  animation: float 2s infinite ease-in-out;
+  z-index: 5;
+}
+
+.obstacle {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: var(--obstacle-color);
+  border-radius: 5px;
+  box-shadow: 0 0 10px purple;
+  z-index: 5;
+}
+
+.control-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent-color);
+  color: white;
+  margin: 10px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover {
+  background: #d43d3d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+#status {
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  font-weight: bold;
+  margin: 10px 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#scoreboard {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-color);
+  font-weight: bold;
+  margin: 10px 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.score {
+  padding: 8px 15px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+#player1Score {
+  color: var(--player1-color);
+  border: 1px solid var(--player1-color);
+}
+
+#player2Score {
+  color: var(--player2-color);
+  border: 1px solid var(--player2-color);
+}
+
+#controls {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+#gameTitle {
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--accent-color);
+  margin: 20px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  display: none;
+  background: linear-gradient(90deg, #f05454, #3e7dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 20px gold; }
+  100% { transform: scale(1.1); box-shadow: 0 0 30px gold; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes glow {
+  0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); }
+  100% { text-shadow: 0 0 20px rgba(255, 0, 150, 0.8), 0 0 30px rgba(255, 0, 150, 0.6); }
+}
+
+.player-jump {
+  animation: jump 0.5s ease;
+}
+
+@keyframes jump {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
+
+/* Particle effects */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle-fade 1s forwards;
+  z-index: 8;
+}
+
+@keyframes particle-fade {
+  0% { opacity: 1; transform: translate(0, 0); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)); }
+}
+
+/* Responsive design */
+@media (max-width: 850px) {
+  #gameContainer {
+    width: 95%;
+    height: 400px;
+  }
+  
+  #gameTitle {
+    font-size: 2rem;
+  }
+  
+  .menu-btn {
+    width: 200px;
+    padding: 12px 20px;
+  }
+  
+  #mainMenu h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Level complete animation */
+.level-complete {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px 40px;
+  border-radius: 10px;
+  font-size: 2rem;
+  z-index: 100;
+  display: none;
+  animation: zoomIn 0.5s;
+  backdrop-filter: blur(5px);
+  border: 2px solid var(--accent-color);
+  text-align: center;
+}
+
+@keyframes zoomIn {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Game over screen */
+#gameOver {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  display: none;
+  backdrop-filter: blur(5px);
+}
+
+#gameOver h2 {
+  color: white;
+  font-size: 3rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px var(--accent-color);
+  text-align: center;
+}
+
+#finalScores {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 30px;
+  text-align: center;
+  line-height: 2;
+}
+
+/* Falling stars background */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: falling linear infinite;
+  opacity: 0;
+}
+
+@keyframes falling {
+  0% { transform: translateY(-100vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh) translateX(100px); opacity: 0; }
+}
+
+/* How to play modal */
+#howToPlayModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  display: none;
+  backdrop-filter: blur(5px);
+}
+
+#howToPlayContent {
+  background: rgba(30, 30, 60, 0.9);
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 600px;
+  border: 2px solid var(--accent-color);
+}
+
+#howToPlayContent h2 {
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#howToPlayContent p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+#howToPlayContent ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+#howToPlayContent li {
+  margin-bottom: 10px;
+}
+
+.close-modal {
+  padding: 10px 20px;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+  align-self: center;
+}
+
+/* Player controls display */
+.controls-display {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+
+.player-controls {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  width: 45%;
+}
+
+.player-controls h3 {
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.control-key {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+</style>
+</head>
+<body>
+
+<!-- Main Menu -->
+<div id="mainMenu">
+  <h1>PLATFORMER DUEL ULTIMATE</h1>
+  <button class="menu-btn" id="startGame">Start Game</button>
+  <button class="menu-btn" id="howToPlayBtn">How to Play</button>
+  <button class="menu-btn" id="settingsBtn">Settings</button>
+  <button class="menu-btn" onclick="window.location.href='index.html'">Exit to Home</button>
+</div>
+
+<!-- How to Play Modal -->
+<div id="howToPlayModal">
+  <div id="howToPlayContent">
+    <h2>HOW TO PLAY</h2>
+    <p>Race against each other to complete all 16 challenging levels!</p>
+    
+    <div class="controls-display">
+      <div class="player-controls">
+        <h3 style="color: var(--player1-color);">Player 1</h3>
+        <div><span class="control-key">W</span> Jump</div>
+        <div><span class="control-key">A</span> Move Left</div>
+        <div><span class="control-key">D</span> Move Right</div>
+        <div><span class="control-key">S</span> Move Down</div>
+      </div>
+      
+      <div class="player-controls">
+        <h3 style="color: var(--player2-color);">Player 2</h3>
+        <div><span class="control-key">↑</span> Jump</div>
+        <div><span class="control-key">←</span> Move Left</div>
+        <div><span class="control-key">→</span> Move Right</div>
+        <div><span class="control-key">↓</span> Move Down</div>
+      </div>
+    </div>
+    
+    <p>Collect <span style="color: var(--powerup-color);">powerups</span> for bonus points!</p>
+    <p>Reach the <span style="color: var(--finish-color);">golden finish</span> to complete each level.</p>
+    <p>Avoid <span style="color: var(--obstacle-color);">purple obstacles</span> - they will reset your position!</p>
+    
+    <button class="close-modal" id="closeHowToPlay">Got It!</button>
+  </div>
+</div>
+
+<!-- Game Title -->
+<h1 id="gameTitle">PLATFORMER DUEL ULTIMATE</h1>
+
+<!-- Game Status -->
+<div id="status">Level 1</div>
+<div id="scoreboard">
+  <div class="score" id="player1Score">Player 1: 0</div>
+  <div class="score" id="player2Score">Player 2: 0</div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <button class="control-btn" id="backToMenu">Back to Menu</button>
+  <button class="control-btn" id="musicBtn">Music: OFF</button>
+  <button class="control-btn" id="soundBtn">Sound: ON</button>
+  <button class="control-btn" id="restartLevel">Restart Level</button>
+</div>
+
+<!-- Game Container -->
+<div id="gameContainer">
+  <div id="player1" class="player"></div>
+  <div id="player2" class="player"></div>
+</div>
+
+<!-- Level Complete Message -->
+<div class="level-complete" id="levelComplete">Level Complete!</div>
+
+<!-- Game Over Screen -->
+<div id="gameOver">
+  <h2>Game Completed!</h2>
+  <div id="finalScores">
+    Final Scores:<br>
+    Player 1: <span id="finalP1">0</span><br>
+    Player 2: <span id="finalP2">0</span>
+  </div>
+  <button class="menu-btn" id="playAgain">Play Again</button>
+  <button class="menu-btn" onclick="window.location.href='index.html'">Exit to Home</button>
+</div>
+
+<!-- Audio Elements -->
+<audio id="bgMusic" loop><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg"></audio>
+<audio id="jumpSound"><source src="https://www.soundjay.com/buttons/sounds/button-09.mp3" type="audio/mpeg"></audio>
+<audio id="hitSound"><source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg"></audio>
+<audio id="powerSound"><source src="https://www.soundjay.com/buttons/sounds/button-21.mp3" type="audio/mpeg"></audio>
+<audio id="winSound"><source src="https://www.soundjay.com/buttons/sounds/button-02.mp3" type="audio/mpeg"></audio>
+<audio id="completeSound"><source src="https://www.soundjay.com/buttons/sounds/button-01.mp3" type="audio/mpeg"></audio>
+
+<script>
+// Game Elements
+const container = document.getElementById('gameContainer');
+const player1 = document.getElementById('player1');
+const player2 = document.getElementById('player2');
+const status = document.getElementById('status');
+const player1Score = document.getElementById('player1Score');
+const player2Score = document.getElementById('player2Score');
+const gameTitle = document.getElementById('gameTitle');
+const mainMenu = document.getElementById('mainMenu');
+const levelComplete = document.getElementById('levelComplete');
+const gameOver = document.getElementById('gameOver');
+const finalP1 = document.getElementById('finalP1');
+const finalP2 = document.getElementById('finalP2');
+const howToPlayModal = document.getElementById('howToPlayModal');
+const howToPlayBtn = document.getElementById('howToPlayBtn');
+const closeHowToPlay = document.getElementById('closeHowToPlay');
+
+// Audio Elements
+const bgMusic = document.getElementById('bgMusic');
+const jumpSound = document.getElementById('jumpSound');
+const hitSound = document.getElementById('hitSound');
+const powerSound = document.getElementById('powerSound');
+const winSound = document.getElementById('winSound');
+const completeSound = document.getElementById('completeSound');
+
+// Buttons
+const musicBtn = document.getElementById('musicBtn');
+const soundBtn = document.getElementById('soundBtn');
+const startGame = document.getElementById('startGame');
+const settingsBtn = document.getElementById('settingsBtn');
+const backToMenu = document.getElementById('backToMenu');
+const restartLevel = document.getElementById('restartLevel');
+const playAgain = document.getElementById('playAgain');
+
+// Game State
+let keys = {};
+let gravity = 0.7;
+let level = 0;
+let score = { p1: 0, p2: 0 };
+let musicOn = false;
+let soundOn = true;
+let gameRunning = false;
+
+// Players configuration
+let players = [
+  { 
+    el: player1, 
+    x: 50, 
+    y: 0, 
+    vy: 0, 
+    left: 'a', 
+    right: 'd', 
+    jump: 'w', 
+    down: 's',
+    scoreKey: 'p1',
+    color: '#ff3e3e',
+    name: 'Player 1'
+  },
+  { 
+    el: player2, 
+    x: 700, 
+    y: 0, 
+    vy: 0, 
+    left: 'ArrowLeft', 
+    right: 'ArrowRight', 
+    jump: 'ArrowUp', 
+    down: 'ArrowDown',
+    scoreKey: 'p2',
+    color: '#3e7dff',
+    name: 'Player 2'
+  }
+];
+
+// All 16 levels with platforms, finish, powerups, obstacles
+const levels = [
+  { platforms: [[0,0,800,20],[200,100,150,20],[500,200,150,20],[100,250,150,20]], finish: [750,250], powerups: [[250,130],[550,230],[150,280]], obstacles: [[400,150,2]] },
+  { platforms: [[0,0,800,20],[100,150,100,20],[300,250,150,20],[600,100,150,20],[200,350,100,20]], finish: [750,350], powerups: [[120,170],[620,120],[220,380]], obstacles: [[350,270,3]] },
+  { platforms: [[0,0,800,20],[150,100,100,20],[350,200,150,20],[550,300,150,20],[250,400,100,20]], finish: [750,350], powerups: [[160,130],[560,330],[260,430]], obstacles: [[400,150,2]] },
+  { platforms: [[0,0,800,20],[50,150,100,20],[250,250,100,20],[450,150,100,20],[650,250,100,20],[150,350,100,20]], finish: [750,300], powerups: [[60,180],[260,280],[460,180],[160,380]], obstacles: [[200,200,2],[500,200,3]] },
+  { platforms: [[0,0,800,20],[100,100,100,20],[300,200,100,20],[500,100,100,20],[700,200,100,20],[200,300,100,20]], finish: [750,250], powerups: [[110,130],[310,230],[510,130],[210,330]], obstacles: [[250,150,2],[450,150,3]] },
+  { platforms: [[0,0,800,20],[50,150,150,20],[250,250,150,20],[450,150,150,20],[650,250,150,20],[350,350,150,20]], finish: [750,300], powerups: [[60,180],[260,280],[460,180],[660,280],[360,380]], obstacles: [[200,200,2],[500,200,3]] },
+  { platforms: [[0,0,800,20],[100,120,100,20],[300,200,100,20],[500,120,100,20],[700,200,100,20],[400,280,100,20]], finish: [750,250], powerups: [[110,150],[310,230],[510,150],[710,230],[410,310]], obstacles: [[250,150,2],[450,150,3]] },
+  { platforms: [[0,0,800,20],[50,150,120,20],[220,250,120,20],[400,150,120,20],[580,250,120,20],[760,150,40,20],[300,350,120,20]], finish: [750,300], powerups: [[60,180],[230,280],[410,180],[590,280],[310,380]], obstacles: [[200,200,2],[500,200,3],[700,200,2]] },
+  { platforms: [[0,0,800,20],[100,120,100,20],[250,200,100,20],[400,120,100,20],[550,200,100,20],[700,120,100,20],[350,280,100,20]], finish: [750,250], powerups: [[110,150],[260,230],[410,150],[560,230],[710,150],[360,310]], obstacles: [[200,150,2],[450,150,3],[650,150,2]] },
+  { platforms: [[0,0,800,20],[50,150,120,20],[220,250,120,20],[400,150,120,20],[580,250,120,20],[760,150,40,20],[300,350,120,20],[500,400,100,20]], finish: [750,300], powerups: [[60,180],[230,280],[410,180],[590,280],[310,380],[510,430]], obstacles: [[200,200,2],[500,200,3],[700,200,2]] },
+  { platforms: [[0,0,800,20],[100,100,100,20],[300,200,100,20],[500,100,100,20],[700,200,100,20],[400,300,100,20],[200,400,100,20]], finish: [750,350], powerups: [[110,130],[310,230],[510,130],[410,330],[210,430]], obstacles: [[250,150,2],[450,150,3],[650,150,2]] },
+  { platforms: [[0,0,800,20],[50,150,120,20],[220,250,120,20],[400,150,120,20],[580,250,120,20],[760,150,40,20],[300,300,120,20],[500,350,100,20],[200,450,120,20]], finish: [750,300], powerups: [[60,180],[230,280],[410,180],[590,280],[310,330],[510,380],[210,480]], obstacles: [[200,200,2],[500,200,3],[700,200,2]] },
+  { platforms: [[0,0,800,20],[100,120,100,20],[250,200,100,20],[400,120,100,20],[550,200,100,20],[700,120,100,20],[350,300,100,20],[500,350,100,20],[300,450,100,20]], finish: [750,250], powerups: [[110,150],[260,230],[410,150],[560,230],[710,150],[360,330],[510,380],[310,480]], obstacles: [[200,150,2],[450,150,3],[650,150,2]] },
+  { platforms: [[0,0,800,20],[50,150,120,20],[220,250,120,20],[400,150,120,20],[580,250,120,20],[760,150,40,20],[300,300,120,20],[500,350,100,20],[600,400,80,20],[200,500,120,20]], finish: [750,350], powerups: [[60,180],[230,280],[410,180],[590,280],[310,330],[510,380],[610,430],[210,530]], obstacles: [[200,200,2],[500,200,3],[700,200,2]] },
+  { platforms: [[0,0,800,20],[100,100,100,20],[300,200,100,20],[500,100,100,20],[700,200,100,20],[400,300,100,20],[200,250,100,20],[600,350,100,20],[300,450,100,20]], finish: [750,350], powerups: [[110,130],[310,230],[510,130],[410,330],[210,280],[610,380],[310,480]], obstacles: [[250,150,2],[450,150,3],[650,150,2]] },
+  { platforms: [[0,0,800,20],[50,150,120,20],[220,250,120,20],[400,150,120,20],[580,250,120,20],[760,150,40,20],[300,300,120,20],[500,350,100,20],[600,300,80,20],[200,400,120,20],[400,500,120,20]], finish: [750,350], powerups: [[60,180],[230,280],[410,180],[590,280],[310,330],[510,380],[610,330],[210,430],[410,530]], obstacles: [[200,200,2],[500,200,3],[700,200,2],[600,250,2]] },
+];
+
+// Create stars for background
+function createStars() {
+  for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.animationDuration = `${5 + Math.random() * 10}s`;
+    star.style.animationDelay = `${Math.random() * 5}s`;
+    document.body.appendChild(star);
+  }
+}
+
+// Event Listeners
+document.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  // Space bar to pause
+  if (e.key === ' ' && gameRunning) {
+    togglePause();
+  }
+});
+
+document.addEventListener('keyup', e => keys[e.key] = false);
+
+musicBtn.addEventListener('click', toggleMusic);
+soundBtn.addEventListener('click', toggleSound);
+startGame.addEventListener('click', startNewGame);
+howToPlayBtn.addEventListener('click', () => howToPlayModal.style.display = 'flex');
+closeHowToPlay.addEventListener('click', () => howToPlayModal.style.display = 'none');
+settingsBtn.addEventListener('click', showSettings);
+backToMenu.addEventListener('click', returnToMenu);
+restartLevel.addEventListener('click', restartCurrentLevel);
+playAgain.addEventListener('click', startNewGame);
+
+// Toggle music on/off
+function toggleMusic() {
+  musicOn = !musicOn;
+  if (musicOn) {
+    bgMusic.play();
+    musicBtn.textContent = "Music: ON";
+    musicBtn.style.background = "var(--accent-color)";
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = "Music: OFF";
+    musicBtn.style.background = "transparent";
+  }
+}
+
+// Toggle sound effects on/off
+function toggleSound() {
+  soundOn = !soundOn;
+  soundBtn.textContent = soundOn ? "Sound: ON" : "Sound: OFF";
+  soundBtn.style.background = soundOn ? "var(--accent-color)" : "transparent";
+}
+
+// Play sound effect if sounds are on
+function playSound(sound) {
+  if (soundOn) {
+    sound.currentTime = 0;
+    sound.play();
+  }
+}
+
+// Start a new game
+function startNewGame() {
+  level = 0;
+  score = { p1: 0, p2: 0 };
+  updateScore();
+  
+  mainMenu.style.display = 'none';
+  gameTitle.style.display = 'block';
+  container.style.display = 'block';
+  gameOver.style.display = 'none';
+  howToPlayModal.style.display = 'none';
+  
+  loadLevel(level);
+  gameRunning = true;
+  requestAnimationFrame(update);
+  
+  // Start music if enabled
+  if (musicOn) {
+    bgMusic.play();
+  }
+}
+
+// Show settings
+function showSettings() {
+  alert('SETTINGS\n\nMusic and sound can be toggled during gameplay.\n\nMore options coming soon!');
+}
+
+// Return to main menu
+function returnToMenu() {
+  gameRunning = false;
+  container.style.display = 'none';
+  gameTitle.style.display = 'none';
+  mainMenu.style.display = 'flex';
+  bgMusic.pause();
+}
+
+// Restart current level
+function restartCurrentLevel() {
+  loadLevel(level);
+}
+
+// Toggle pause game
+function togglePause() {
+  gameRunning = !gameRunning;
+  if (gameRunning) {
+    status.textContent = `Level ${level+1}`;
+    requestAnimationFrame(update);
+    if (musicOn) bgMusic.play();
+  } else {
+    status.textContent = `PAUSED - Level ${level+1}`;
+    bgMusic.pause();
+  }
+}
+
+// Load a level
+function loadLevel(lvl) {
+  // Clear existing elements
+  container.querySelectorAll('.platform, .finish, .powerup, .obstacle').forEach(el => el.remove());
+  
+  const currentLevel = levels[lvl];
+  
+  // Create platforms
+  currentLevel.platforms.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'platform';
+    div.style.left = p[0] + 'px';
+    div.style.bottom = p[1] + 'px';
+    div.style.width = p[2] + 'px';
+    div.style.height = p[3] + 'px';
+    container.appendChild(div);
+  });
+  
+  // Create finish point
+  const finish = document.createElement('div');
+  finish.className = 'finish';
+  finish.style.left = currentLevel.finish[0] + 'px';
+  finish.style.bottom = currentLevel.finish[1] + 'px';
+  container.appendChild(finish);
+  
+  // Create powerups
+  currentLevel.powerups.forEach(pu => {
+    const div = document.createElement('div');
+    div.className = 'powerup';
+    div.style.left = pu[0] + 'px';
+    div.style.bottom = pu[1] + 'px';
+    container.appendChild(div);
+  });
+  
+  // Create obstacles
+  currentLevel.obstacles.forEach(ob => {
+    const div = document.createElement('div');
+    div.className = 'obstacle';
+    div.style.left = ob[0] + 'px';
+    div.style.bottom = ob[1] + 'px';
+    container.appendChild(div);
+  });
+  
+  status.textContent = `Level ${lvl+1}`;
+  
+  // Reset player positions
+  players[0].x = 50;
+  players[0].y = 0;
+  players[0].vy = 0;
+  players[1].x = 700;
+  players[1].y = 0;
+  players[1].vy = 0;
+  
+  updatePlayerPositions();
+}
+
+// Update player positions on screen
+function updatePlayerPositions() {
+  players.forEach(p => {
+    p.el.style.left = p.x + 'px';
+    p.el.style.bottom = p.y + 'px';
+  });
+}
+
+// Update score display
+function updateScore() {
+  player1Score.textContent = `${players[0].name}: ${score.p1}`;
+  player2Score.textContent = `${players[1].name}: ${score.p2}`;
+}
+
+// Create particle effect
+function createParticles(x, y, color, count = 10) {
+  for (let i = 0; i < count; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = x + 'px';
+    particle.style.bottom = y + 'px';
+    particle.style.background = color;
+    
+    // Random direction and distance
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 5 + Math.random() * 20;
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+    
+    particle.style.setProperty('--tx', tx + 'px');
+    particle.style.setProperty('--ty', ty + 'px');
+    
+    container.appendChild(particle);
+    
+    // Remove particle after animation
+    setTimeout(() => {
+      particle.remove();
+    }, 1000);
+  }
+}
+
+// Main game update loop
+function update() {
+  if (!gameRunning) return;
+  
+  players.forEach(p => {
+    // Horizontal movement
+    if (keys[p.left]) {
+      p.x -= 5;
+      p.el.style.transform = 'scaleX(-1)';
+    }
+    if (keys[p.right]) {
+      p.x += 5;
+      p.el.style.transform = 'scaleX(1)';
+    }
+    
+    // Vertical movement (down)
+    if (keys[p.down]) {
+      p.y += 5;
+    }
+    
+    // Apply gravity
+    p.vy += gravity;
+    p.y += p.vy;
+    
+    // Check platform collisions
+    let onPlatform = false;
+    container.querySelectorAll('.platform').forEach(pl => {
+      const px = p.x, py = p.y, pw = p.el.offsetWidth, ph = p.el.offsetHeight;
+      const plx = pl.offsetLeft, ply = pl.offsetTop, plw = pl.offsetWidth, plh = pl.offsetHeight;
+      
+      // Check if player is above platform and falling
+      if (px + pw > plx && px < plx + plw && 
+          py + ph > ply && py + ph < ply + p.vy + plh) {
+        p.y = ply - ph;
+        p.vy = 0;
+        onPlatform = true;
+      }
+      
+      // Check if player is below platform and moving up
+      if (keys[p.down] && px + pw > plx && px < plx + plw && 
+          py < ply + plh && py > ply) {
+        p.y = ply + plh;
+        p.vy = 0;
+      }
+    });
+    
+    // Jumping
+    if (keys[p.jump] && onPlatform) {
+      p.vy = -12;
+      playSound(jumpSound);
+      p.el.classList.add('player-jump');
+      setTimeout(() => p.el.classList.remove('player-jump'), 500);
+    }
+    
+    // Boundary checks
+    if (p.y < 0) {
+      p.y = 0;
+      p.vy = 0;
+      playSound(hitSound);
+    }
+    if (p.x < 0) p.x = 0;
+    if (p.x + p.el.offsetWidth > container.offsetWidth) {
+      p.x = container.offsetWidth - p.el.offsetWidth;
+    }
+    
+    // Update player position
+    p.el.style.left = p.x + 'px';
+    p.el.style.bottom = p.y + 'px';
+    
+    // Powerup collection
+    container.querySelectorAll('.powerup').forEach(pu => {
+      const px = p.x + p.el.offsetWidth/2;
+      const py = p.y + p.el.offsetHeight/2;
+      const pux = pu.offsetLeft + pu.offsetWidth/2;
+      const puy = pu.offsetTop + pu.offsetHeight/2;
+      
+      if (Math.abs(px - pux) < 20 && Math.abs(py - puy) < 20) {
+        score[p.scoreKey] += 10;
+        playSound(powerSound);
+        createParticles(pux, puy, p.color, 15);
+        pu.remove();
+        updateScore();
+      }
+    });
+    
+    // Obstacle collision
+    container.querySelectorAll('.obstacle').forEach(ob => {
+      // Move obstacle
+      const vx = 2;
+      ob.style.left = (ob.offsetLeft + vx) % (container.offsetWidth - ob.offsetWidth) + 'px';
+      
+      // Check collision
+      const px = p.x + p.el.offsetWidth/2;
+      const py = p.y + p.el.offsetHeight/2;
+      const obx = ob.offsetLeft + ob.offsetWidth/2;
+      const oby = ob.offsetTop + ob.offsetHeight/2;
+      
+      if (Math.abs(px - obx) < 20 && Math.abs(py - oby) < 20) {
+        p.y = 0;
+        p.vy = 0;
+        playSound(hitSound);
+        createParticles(obx, oby, '#8a2be2', 10);
+      }
+    });
+    
+    // Finish point collision
+    const finish = container.querySelector('.finish');
+    if (p.x + p.el.offsetWidth > parseInt(finish.style.left) && 
+        p.x < parseInt(finish.style.left) + 50 &&
+        p.y + p.el.offsetHeight > parseInt(finish.style.bottom) && 
+        p.y < parseInt(finish.style.bottom) + 50) {
+      
+      playSound(winSound);
+      createParticles(parseInt(finish.style.left) + 25, parseInt(finish.style.bottom) + 25, '#ffd700', 30);
+      
+      level++;
+      if (level >= levels.length) {
+        // Game completed
+        gameCompleted();
+        return;
+      }
+      
+      // Show level complete message
+      levelComplete.style.display = 'block';
+      levelComplete.textContent = `${p.name} completed level ${level}!`;
+      playSound(completeSound);
+      
+      // Load next level after delay
+      setTimeout(() => {
+        levelComplete.style.display = 'none';
+        loadLevel(level);
+      }, 2000);
+    }
+  });
+  
+  requestAnimationFrame(update);
+}
+
+// Handle game completion
+function gameCompleted() {
+  gameRunning = false;
+  finalP1.textContent = score.p1;
+  finalP2.textContent = score.p2;
+  
+  // Determine winner
+  let winnerText = "";
+  if (score.p1 > score.p2) {
+    winnerText = `${players[0].name} Wins!`;
+  } else if (score.p2 > score.p1) {
+    winnerText = `${players[1].name} Wins!`;
+  } else {
+    winnerText = "It's a Tie!";
+  }
+  
+  document.querySelector('#gameOver h2').textContent = `Game Completed! ${winnerText}`;
+  gameOver.style.display = 'flex';
+}
+
+// Initialize the game
+createStars();
+updateScore();
+
+// Try to autoplay music (may not work due to browser restrictions)
+document.body.addEventListener('click', () => {
+  if (!musicOn) {
+    bgMusic.play().then(() => {
+      musicOn = true;
+      musicBtn.textContent = "Music: ON";
+      musicBtn.style.background = "var(--accent-color)";
+    }).catch(e => {
+      musicOn = false;
+      musicBtn.textContent = "Music: OFF";
+      musicBtn.style.background = "transparent";
+    });
+  }
+}, { once: true });
+</script>
+</body>
+</html>

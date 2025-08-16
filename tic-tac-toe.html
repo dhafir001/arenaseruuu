@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON TAC TOE | Cyber Arena</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff2a6d;
+            --neon-blue: #05d9e8;
+            --neon-purple: #d300c5;
+            --dark-bg: #0d0221;
+            --darker-bg: #050110;
+            --glow-pink: 0 0 10px rgba(255, 42, 109, 0.8), 0 0 20px rgba(255, 42, 109, 0.6), 0 0 30px rgba(255, 42, 109, 0.4);
+            --glow-blue: 0 0 10px rgba(5, 217, 232, 0.8), 0 0 20px rgba(5, 217, 232, 0.6), 0 0 30px rgba(5, 217, 232, 0.4);
+            --glow-purple: 0 0 10px rgba(211, 0, 197, 0.8), 0 0 20px rgba(211, 0, 197, 0.6), 0 0 30px rgba(211, 0, 197, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            background-color: var(--dark-bg);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255, 42, 109, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, rgba(5, 217, 232, 0.15) 0%, transparent 25%),
+                linear-gradient(to bottom, var(--darker-bg), var(--dark-bg));
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(135deg, transparent 48%, var(--neon-pink) 49%, var(--neon-pink) 51%, transparent 52%),
+                linear-gradient(-135deg, transparent 48%, var(--neon-blue) 49%, var(--neon-blue) 51%, transparent 52%);
+            background-size: 40px 40px;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Menu Styles */
+        #main-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 1, 16, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: all 0.5s ease;
+        }
+
+        #main-menu.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .menu-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 50px;
+            background: linear-gradient(to right, var(--neon-pink), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: titleGlow 3s infinite alternate;
+        }
+
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 300px;
+        }
+
+        .menu-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            border: 2px solid var(--neon-purple);
+            background: transparent;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(211, 0, 197, 0.3);
+            text-transform: uppercase;
+        }
+
+        .menu-btn.exit-btn {
+            border-color: #ff5555;
+            box-shadow: 0 0 10px rgba(255, 85, 85, 0.3);
+        }
+
+        .menu-btn.exit-btn:hover {
+            background: rgba(255, 85, 85, 0.2);
+            box-shadow: 0 0 20px rgba(255, 85, 85, 0.6);
+        }
+
+        .menu-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(211, 0, 197, 0.2);
+            box-shadow: var(--glow-purple);
+            transform: translateY(-3px);
+        }
+
+        .menu-btn:hover::before {
+            left: 100%;
+        }
+
+        .settings-panel {
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid var(--neon-purple);
+            width: 300px;
+        }
+
+        .settings-title {
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .volume-control label {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .volume-control input {
+            width: 150px;
+        }
+
+        /* Game Styles */
+        .game-container {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .game-container.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        h1 {
+            margin: 20px 0;
+            color: var(--neon-pink);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: var(--glow-pink);
+            animation: pulse 2s infinite alternate;
+            position: relative;
+        }
+
+        h1::after {
+            content: "CYBER ARENA";
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: var(--neon-blue);
+            text-shadow: var(--glow-blue);
+            letter-spacing: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-gap: 10px;
+            margin: 20px auto;
+            width: 380px;
+            perspective: 1000px;
+        }
+
+        .cell {
+            width: 120px;
+            height: 120px;
+            background-color: rgba(13, 2, 33, 0.7);
+            border: 2px solid var(--neon-purple);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 70px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(211, 0, 197, 0.3);
+            font-family: 'Orbitron', sans-serif;
+            color: transparent;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .cell::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 45%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 55%
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .cell:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--glow-purple);
+            border-color: white;
+        }
+
+        .cell:hover::before {
+            animation: shine 1.5s infinite;
+            opacity: 1;
+        }
+
+        .cell.X {
+            color: var(--neon-pink);
+            text-shadow: var(--glow-pink);
+        }
+
+        .cell.O {
+            color: var(--neon-blue);
+            text-shadow: var(--glow-blue);
+        }
+
+        .cell.win {
+            animation: winPulse 1s infinite alternate;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .cell.X.win {
+            box-shadow: var(--glow-pink);
+            border-color: var(--neon-pink);
+        }
+
+        .cell.O.win {
+            box-shadow: var(--glow-blue);
+            border-color: var(--neon-blue);
+        }
+
+        button.control-btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+            color: white;
+            margin: 5px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 10px rgba(211, 0, 197, 0.3);
+        }
+
+        button.control-btn.exit-btn {
+            border-color: #ff5555;
+            box-shadow: 0 0 10px rgba(255, 85, 85, 0.3);
+        }
+
+        button.control-btn.exit-btn:hover {
+            background: rgba(255, 85, 85, 0.2);
+            box-shadow: 0 0 20px rgba(255, 85, 85, 0.6);
+        }
+
+        button.control-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button.control-btn:hover {
+            background-color: rgba(211, 0, 197, 0.2);
+            box-shadow: var(--glow-purple);
+            transform: translateY(-3px);
+        }
+
+        button.control-btn:hover::before {
+            left: 100%;
+        }
+
+        #status {
+            font-size: 24px;
+            margin: 15px 0;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px white;
+            min-height: 36px;
+        }
+
+        #scoreboard {
+            margin: 15px 0;
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-x {
+            color: var(--neon-pink);
+            text-shadow: var(--glow-pink);
+        }
+
+        .score-o {
+            color: var(--neon-blue);
+            text-shadow: var(--glow-blue);
+        }
+
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            min-width: 50px;
+            display: inline-block;
+        }
+
+        .cyber-line {
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+            margin: 20px 0;
+            box-shadow: var(--glow-purple);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        @keyframes winPulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        @keyframes shine {
+            0% { left: -100%; opacity: 0; }
+            20% { opacity: 0.5; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 22%, 24%, 55% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+            100% { text-shadow: 0 0 30px rgba(255, 42, 109, 0.6), 0 0 50px rgba(5, 217, 232, 0.6); }
+        }
+
+        /* Futuristic cursor */
+        body {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6' fill='none' stroke='%23ff2a6d' stroke-width='2'/><circle cx='8' cy='8' r='2' fill='%23ff2a6d'/></svg>") 8 8, auto;
+        }
+
+        /* Responsive design */
+        @media (max-width: 500px) {
+            .menu-title {
+                font-size: 3rem;
+                margin-bottom: 30px;
+            }
+            
+            #board {
+                grid-template-columns: repeat(3, 80px);
+                width: 260px;
+            }
+            
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 50px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Particle effects */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            to {
+                transform: translateY(-100vh);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Menu -->
+    <div id="main-menu">
+        <h1 class="menu-title">NEON TAC TOE</h1>
+        
+        <div class="menu-options">
+            <button class="menu-btn" id="start-game">START GAME</button>
+            <button class="menu-btn" id="how-to-play">HOW TO PLAY</button>
+            <button class="menu-btn exit-btn" id="exit-btn">EXIT</button>
+        </div>
+        
+        <div class="settings-panel">
+            <h3 class="settings-title">AUDIO SETTINGS</h3>
+            <div class="volume-control">
+                <label for="music-volume">Music Volume:</label>
+                <input type="range" id="music-volume" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="volume-control">
+                <label for="sfx-volume">SFX Volume:</label>
+                <input type="range" id="sfx-volume" min="0" max="1" step="0.1" value="0.7">
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container" id="game-container">
+        <!-- Particle effects -->
+        <div class="particles" id="particles"></div>
+
+        <h1>NEON TAC TOE</h1>
+        
+        <div class="cyber-line"></div>
+        
+        <div class="controls">
+            <button class="control-btn" id="menu-btn">MAIN MENU</button>
+            <button class="control-btn" onclick="resetBoard()">RESET ROUND</button>
+            <button class="control-btn exit-btn" onclick="exitToIndex()">EXIT</button>
+        </div>
+
+        <div id="board"></div>
+        
+        <div id="status">PLAYER <span class="player-turn">X</span>'S TURN</div>
+        
+        <div id="scoreboard">
+            <div class="score score-x">
+                <span>PLAYER X:</span>
+                <span class="score-value" id="score-x">0</span>
+            </div>
+            <div class="score score-o">
+                <span>PLAYER O:</span>
+                <span class="score-value" id="score-o">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="bg-music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clickSound">
+        <source src="klik.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="drawSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="menuClickSound">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // DOM elements
+        const mainMenu = document.getElementById('main-menu');
+        const gameContainer = document.getElementById('game-container');
+        const startGameBtn = document.getElementById('start-game');
+        const howToPlayBtn = document.getElementById('how-to-play');
+        const exitBtn = document.getElementById('exit-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const scoreX = document.getElementById('score-x');
+        const scoreO = document.getElementById('score-o');
+        const musicVolume = document.getElementById('music-volume');
+        const sfxVolume = document.getElementById('sfx-volume');
+        
+        // Audio elements
+        const bgMusic = document.getElementById('bg-music');
+        const clickSound = document.getElementById('clickSound');
+        const winSound = document.getElementById('winSound');
+        const drawSound = document.getElementById('drawSound');
+        const menuClickSound = document.getElementById('menuClickSound');
+        
+        // Game state
+        let turn = 'X';
+        let boardState = Array(9).fill('');
+        let score = {X: 0, O: 0};
+        let gameActive = true;
+
+        // Initialize audio
+        function initAudio() {
+            // Set initial volumes
+            bgMusic.volume = musicVolume.value;
+            clickSound.volume = sfxVolume.value;
+            winSound.volume = sfxVolume.value;
+            drawSound.volume = sfxVolume.value;
+            menuClickSound.volume = sfxVolume.value;
+            
+            // Start background music (autoplay may be blocked by browser)
+            const playMusic = () => {
+                bgMusic.play().catch(e => {
+                    console.log("Autoplay prevented. User must interact first.");
+                });
+            };
+            
+            // Try to play music when user interacts
+            document.addEventListener('click', () => {
+                playMusic();
+                document.removeEventListener('click', playMusic);
+            }, { once: true });
+            
+            // Volume controls
+            musicVolume.addEventListener('input', () => {
+                bgMusic.volume = musicVolume.value;
+            });
+            
+            sfxVolume.addEventListener('input', () => {
+                clickSound.volume = sfxVolume.value;
+                winSound.volume = sfxVolume.value;
+                drawSound.volume = sfxVolume.value;
+                menuClickSound.volume = sfxVolume.value;
+            });
+        }
+
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const colors = ['#ff2a6d', '#05d9e8', '#d300c5', '#ffffff'];
+            
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.width = `${Math.random() * 3 + 1}px`;
+                particle.style.height = particle.style.width;
+                particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Exit to index.html
+        function exitToIndex() {
+            playMenuClickSound();
+            window.location.href = 'index.html';
+        }
+
+        // Initialize game
+        function initGame() {
+            createBoard();
+            createParticles();
+            updateStatus();
+            updateScore();
+            initAudio();
+            
+            // Menu button events
+            startGameBtn.addEventListener('click', () => {
+                playMenuClickSound();
+                mainMenu.classList.add('hidden');
+                setTimeout(() => {
+                    gameContainer.classList.add('visible');
+                }, 500);
+            });
+            
+            howToPlayBtn.addEventListener('click', () => {
+                playMenuClickSound();
+                alert("HOW TO PLAY:\n\n1. Players alternate placing X and O\n2. First to get 3 in a row wins\n3. Click cells to make your move\n4. Reset Round starts new round\n5. New Game resets all scores");
+            });
+            
+            exitBtn.addEventListener('click', exitToIndex);
+            
+            menuBtn.addEventListener('click', () => {
+                playMenuClickSound();
+                gameContainer.classList.remove('visible');
+                setTimeout(() => {
+                    mainMenu.classList.remove('hidden');
+                }, 500);
+            });
+        }
+
+        // Play menu click sound
+        function playMenuClickSound() {
+            menuClickSound.currentTime = 0;
+            menuClickSound.play();
+        }
+
+        // Create game board
+        function createBoard() {
+            board.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                board.appendChild(cell);
+            }
+            boardState.fill('');
+            gameActive = true;
+        }
+
+        // Handle cell click
+        function handleCellClick() {
+            if (!gameActive) return;
+            
+            const index = this.dataset.index;
+            if (boardState[index] !== '') return;
+
+            boardState[index] = turn;
+            this.textContent = turn;
+            this.classList.add(turn);
+            
+            // Play click sound
+            clickSound.currentTime = 0;
+            clickSound.play();
+
+            const winCombo = checkWin();
+            if (winCombo) {
+                handleWin(winCombo);
+                return;
+            }
+
+            if (boardState.every(cell => cell !== '')) {
+                handleDraw();
+                return;
+            }
+
+            turn = turn === 'X' ? 'O' : 'X';
+            updateStatus();
+        }
+
+        // Check for win
+        function checkWin() {
+            const wins = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+
+            for (let combo of wins) {
+                const [a, b, c] = combo;
+                if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+                    return combo;
+                }
+            }
+            return null;
+        }
+
+        // Handle win
+        function handleWin(combo) {
+            gameActive = false;
+            score[turn]++;
+            updateScore();
+            
+            // Highlight winning cells
+            combo.forEach(i => {
+                board.children[i].classList.add('win');
+            });
+
+            // Play win sound
+            winSound.currentTime = 0;
+            winSound.play();
+
+            // Update status with celebration
+            status.innerHTML = `PLAYER <span class="player-turn">${turn}</span> <span style="color:${turn === 'X' ? 'var(--neon-pink)' : 'var(--neon-blue)'}">WINS!</span>`;
+            
+            // Create explosion effect
+            createExplosion(combo);
+        }
+
+        // Handle draw
+        function handleDraw() {
+            gameActive = false;
+            
+            // Play draw sound
+            drawSound.currentTime = 0;
+            drawSound.play();
+            
+            status.innerHTML = `<span style="color:var(--neon-purple)">DRAW!</span>`;
+            
+            // Pulse all cells
+            Array.from(board.children).forEach(cell => {
+                cell.style.animation = 'pulse 1s infinite alternate';
+                setTimeout(() => {
+                    cell.style.animation = '';
+                }, 3000);
+            });
+        }
+
+        // Update status display
+        function updateStatus() {
+            const playerClass = turn === 'X' ? 'score-x' : 'score-o';
+            status.innerHTML = `PLAYER <span class="player-turn ${playerClass}">${turn}</span>'S TURN`;
+        }
+
+        // Update score display
+        function updateScore() {
+            scoreX.textContent = score.X;
+            scoreO.textContent = score.O;
+        }
+
+        // Reset board for new round
+        function resetBoard() {
+            createBoard();
+            turn = score.X >= score.O ? 'X' : 'O'; // Alternate starting player
+            updateStatus();
+            
+            // Remove win highlights
+            Array.from(board.children).forEach(cell => {
+                cell.classList.remove('win', 'X', 'O');
+                cell.textContent = '';
+            });
+            
+            // Play click sound
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        // Reset entire game
+        function resetGame() {
+            score = {X: 0, O: 0};
+            resetBoard();
+            updateScore();
+            
+            // Play click sound
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        // Create explosion effect for winning cells
+        function createExplosion(cells) {
+            cells.forEach(index => {
+                const cell = board.children[index];
+                const particles = 15;
+                
+                for (let i = 0; i < particles; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    particle.style.position = 'absolute';
+                    particle.style.width = '6px';
+                    particle.style.height = '6px';
+                    particle.style.borderRadius = '50%';
+                    particle.style.backgroundColor = turn === 'X' ? 'var(--neon-pink)' : 'var(--neon-blue)';
+                    particle.style.left = `${cell.offsetLeft + cell.offsetWidth/2 - 3}px`;
+                    particle.style.top = `${cell.offsetTop + cell.offsetHeight/2 - 3}px`;
+                    particle.style.opacity = '1';
+                    particle.style.zIndex = '100';
+                    particle.style.pointerEvents = 'none';
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = 2 + Math.random() * 3;
+                    const lifetime = 1000 + Math.random() * 500;
+                    
+                    document.body.appendChild(particle);
+                    
+                    let startTime = Date.now();
+                    
+                    function animate() {
+                        const elapsed = Date.now() - startTime;
+                        const progress = elapsed / lifetime;
+                        
+                        if (progress >= 1) {
+                            document.body.removeChild(particle);
+                            return;
+                        }
+                        
+                        const x = cell.offsetLeft + cell.offsetWidth/2 - 3 + Math.cos(angle) * velocity * elapsed * 0.1;
+                        const y = cell.offsetTop + cell.offsetHeight/2 - 3 + Math.sin(angle) * velocity * elapsed * 0.1;
+                        
+                        particle.style.left = `${x}px`;
+                        particle.style.top = `${y}px`;
+                        particle.style.opacity = 1 - progress;
+                        
+                        requestAnimationFrame(animate);
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+            });
+        }
+
+        // Initialize the game
+        initGame();
+    </script>
+</body>
+</html>
