@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Dalam Pemeliharaan - Arena Seru</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(-45deg, #0f172a, #1e293b, #1e3a8a, #0f172a);
+      background-size: 400% 400%;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      animation: gradientBG 15s ease infinite;
+      position: relative;
+    }
+
+    /* Particle background effect */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(56, 189, 248, 0.7);
+      border-radius: 50%;
+      animation: float 15s infinite ease-in-out;
+      filter: blur(1px);
+    }
+
+    /* Glowing circles */
+    .glowing-circle {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(56, 189, 248, 0.2);
+      animation: pulse 4s infinite ease-in-out;
+    }
+
+    .circle-1 {
+      width: 300px;
+      height: 300px;
+      top: -150px;
+      right: -150px;
+      animation-delay: 0s;
+    }
+
+    .circle-2 {
+      width: 500px;
+      height: 500px;
+      bottom: -250px;
+      left: -250px;
+      animation-delay: 1s;
+    }
+
+    .circle-3 {
+      width: 200px;
+      height: 200px;
+      top: 50%;
+      left: 20%;
+      animation-delay: 2s;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 750px;
+      padding: 40px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      z-index: 1;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(56, 189, 248, 0.1);
+      transform: translateY(0);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9, #38bdf8);
+      background-size: 200% 100%;
+      animation: gradientFlow 3s linear infinite;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+      position: relative;
+      display: inline-block;
+      animation: textGlow 2s infinite alternate;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+      animation: linePulse 3s infinite;
+    }
+
+    p {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .gears-container {
+      position: relative;
+      height: 180px;
+      margin: 40px 0;
+      perspective: 1000px;
+    }
+
+    .gear {
+      font-size: 5.5rem;
+      position: absolute;
+      color: #38bdf8;
+      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.9));
+      transition: all 0.5s ease;
+    }
+
+    .gear-1 {
+      animation: spin 4s linear infinite, floatGear1 6s ease-in-out infinite;
+      left: 25%;
+      top: 10px;
+      z-index: 3;
+    }
+
+    .gear-2 {
+      animation: spin-reverse 5s linear infinite, floatGear2 7s ease-in-out infinite;
+      right: 25%;
+      top: 20px;
+      font-size: 4.5rem;
+      z-index: 2;
+    }
+
+    .gear-3 {
+      animation: spin 7s linear infinite, floatGear3 8s ease-in-out infinite;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 4rem;
+      z-index: 1;
+    }
+
+    .gear:hover {
+      color: #7dd3fc;
+      filter: drop-shadow(0 0 20px rgba(125, 211, 252, 1));
+      transform: scale(1.1);
+    }
+
+    .progress-container {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      height: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 30px 0;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 65%;
+      background: linear-gradient(90deg, #38bdf8, #0ea5e9, #7dd3fc);
+      border-radius: 10px;
+      animation: progressAnimation 3s infinite ease-in-out, progressGlow 2s infinite alternate;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: progressShine 2s infinite;
+    }
+
+    .countdown {
+      font-size: 1.8rem;
+      margin: 30px 0;
+      color: #7dd3fc;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(125, 211, 252, 0.5);
+      animation: countdownPulse 2s infinite;
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    .social-links a {
+      color: #cbd5e1;
+      font-size: 2.2rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .social-links a:hover {
+      color: #38bdf8;
+      transform: translateY(-8px) scale(1.2);
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.9);
+    }
+
+    .social-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #38bdf8;
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .social-links a:hover::after {
+      transform: scaleX(1);
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 1.1rem;
+      color: #94a3b8;
+      position: relative;
+      animation: fadeInOut 3s infinite;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: 25%;
+      width: 50%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    }
+
+    /* Notification badge */
+    .notification {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      animation: notificationPulse 2s infinite;
+      z-index: 10;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+    }
+
+    /* Animations */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spin-reverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.5; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+      50% { transform: scale(1.1); opacity: 0.8; box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); }
+      100% { transform: scale(1); opacity: 0.5; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes progressAnimation {
+      0% { width: 65%; }
+      50% { width: 68%; }
+      100% { width: 65%; }
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+
+    @keyframes floatGear1 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    @keyframes floatGear2 {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(15px) rotate(-5deg); }
+    }
+
+    @keyframes floatGear3 {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+
+    @keyframes textGlow {
+      0% { text-shadow: 0 0 10px rgba(56, 189, 248, 0.7); }
+      100% { text-shadow: 0 0 20px rgba(56, 189, 248, 0.9), 0 0 30px rgba(56, 189, 248, 0.5); }
+    }
+
+    @keyframes linePulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes progressGlow {
+      0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.7); }
+      100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.9); }
+    }
+
+    @keyframes progressShine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes countdownPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes notificationPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(239, 68, 68, 0.9); }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      h1 { font-size: 2.5rem; }
+      p { font-size: 1.1rem; }
+      .gears-container { height: 150px; }
+      .gear { font-size: 4rem; }
+      .gear-2 { font-size: 3.5rem; }
+      .gear-3 { font-size: 3rem; }
+      .container { padding: 30px 20px; margin: 0 15px; }
+      .social-links a { font-size: 1.8rem; }
+      .countdown { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background elements -->
+  <div class="particles" id="particles"></div>
+  <div class="glowing-circle circle-1"></div>
+  <div class="glowing-circle circle-2"></div>
+  <div class="glowing-circle circle-3"></div>
+
+  <div class="notification">
+    <i class="fas fa-exclamation-circle"></i> Sistem Dalam Pemeliharaan
+  </div>
+
+  <div class="container">
+    <div class="gears-container">
+      <div class="gear gear-1"><i class="fas fa-cog"></i></div>
+      <div class="gear gear-2"><i class="fas fa-cog"></i></div>
+      <div class="gear gear-3"><i class="fas fa-cog"></i></div>
+    </div>
+    
+    <h1>Sedang Pemeliharaan</h1>
+    <p>
+      Kami sedang melakukan peningkatan sistem untuk pengalaman yang lebih baik.<br>
+      Mohon maaf atas ketidaknyamanannya. Silakan kembali lagi nanti.
+    </p>
+
+    <div class="progress-container">
+      <div class="progress-bar"></div>
+    </div>
+
+    <div class="countdown" id="countdown">
+      Estimasi waktu selesai: <span id="timer">05:00:00</span>
+    </div>
+
+    <div class="social-links">
+      <a href="#"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-youtube"></i></a>
+    </div>
+
+    <div class="footer">© 2025 Arena Seru. All rights reserved.</div>
+  </div>
+
+  <script>
+    // Create floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 50;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random properties
+        const size = Math.random() * 12 + 2;
+        const posX = Math.random() * 100;
+        const delay = Math.random() * 15;
+        const duration = Math.random() * 10 + 15;
+        const colors = [
+          'rgba(56, 189, 248, 0.7)',
+          'rgba(125, 211, 252, 0.7)',
+          'rgba(14, 165, 233, 0.7)',
+          'rgba(186, 230, 253, 0.7)'
+        ];
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.animationDuration = `${duration}s`;
+        particle.style.background = randomColor;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Countdown timer
+    function startCountdown() {
+      const timerElement = document.getElementById('timer');
+      let totalSeconds = 5 * 60 * 60; // 5 hours in seconds
+      
+      const countdownInterval = setInterval(() => {
+        if (totalSeconds <= 0) {
+          clearInterval(countdownInterval);
+          timerElement.textContent = "00:00:00";
+          return;
+        }
+        
+        totalSeconds--;
+        
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        
+        timerElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+    
+    // Add interactive effects to gears
+    function addGearInteractions() {
+      const gears = document.querySelectorAll('.gear');
+      
+      gears.forEach(gear => {
+        gear.addEventListener('mouseenter', () => {
+          gear.style.animationPlayState = 'paused';
+        });
+        
+        gear.addEventListener('mouseleave', () => {
+          gear.style.animationPlayState = 'running';
+        });
+      });
+    }
+    
+    // Initialize effects
+    window.onload = function() {
+      createParticles();
+      startCountdown();
+      addGearInteractions();
+    };
+  </script>
+</body>
+</html>
